@@ -3,12 +3,18 @@ services:
     name: dairy-ai-assistant-api
     runtime: docker
     dockerfilePath: ./Dockerfile
-    plan: standard
+    plan: free
     region: oregon
     healthCheckPath: /health
     envVars:
       - key: FORCE_CPU
         value: "true"
+      - key: OMP_NUM_THREADS
+        value: "1"
+      - key: MALLOC_ARENA_MAX
+        value: "2"
+      - key: WEB_CONCURRENCY
+        value: "1"
       - key: ENABLE_EXPERIMENTAL_MODELS
         value: "false"
       - key: CHAT_DEFAULT_LANGUAGE

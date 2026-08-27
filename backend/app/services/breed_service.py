@@ -46,12 +46,13 @@ class BreedInferenceService:
 
         try:
             tensor = self.transform(image).unsqueeze(0).to(device)
-            with torch.no_grad():
+            with torch.inference_mode():
                 logits = model(tensor)
                 probabilities = torch.softmax(logits, dim=1)
-
-            confidence, index = probabilities.max(dim=1)
-            top_values, top_indices = probabilities.topk(min(5, len(classes)), dim=1)
+                confidence, index = probabilities.max(dim=1)
+                top_values, top_indices = probabilities.topk(min(5, len(classes)), dim=1)
+            del tensor
+            del logits
 
             top_predictions = []
             for value, idx in zip(top_values[0], top_indices[0]):

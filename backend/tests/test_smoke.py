@@ -8,6 +8,7 @@ from PIL import Image
 from fastapi.testclient import TestClient
 from backend.main import app
 from backend.config import settings
+from backend.app.services.model_loader import model_loader
 
 
 @pytest.fixture(scope="module")
@@ -26,7 +27,7 @@ def create_mock_image_bytes(size=(300, 300), color=(120, 150, 180)) -> bytes:
 
 
 # ----------------------------------------------------------------------
-# 1. Health & Status Tests
+# 1. Health & Status Tests (Lazy Loading Architecture)
 # ----------------------------------------------------------------------
 
 def test_health_endpoints(client: TestClient):
@@ -36,7 +37,8 @@ def test_health_endpoints(client: TestClient):
     data_root = res_root.json()
     assert data_root["status"] == "healthy"
     assert data_root["production_models_ready"] == 13
-    assert data_root["models_loaded"] >= 13
+    assert isinstance(data_root["models_loaded"], int)
+    assert data_root["models_loaded"] >= 0
 
     res_v1 = client.get("/api/v1/health")
     assert res_v1.status_code == 200
@@ -45,6 +47,53 @@ def test_health_endpoints(client: TestClient):
     res_ping = client.get("/api/v1/ping")
     assert res_ping.status_code == 200
     assert res_ping.json()["ping"] == "pong"
+
+
+def test_lazy_loading_lifecycle(client: TestClient):
+    """Verify models are loaded on-demand and cached without duplicate loading."""
+    # 1. Start with clean cache
+    model_loader.clear_cache()
+    assert model_loader.get_loaded_models_count() == 0
+
+    # 2. Health check reports 0 loaded models without triggering model load
+    res_health = client.get("/health")
+    assert res_health.status_code == 200
+    assert res_health.json()["models_loaded"] == 0
+
+    # 3. Call tabular prediction endpoint -> loads only milk_production pipeline
+    payload = {
+        "body_weight_kg": 450.0,
+        "days_in_milk": 60,
+        "lactation_number": 2,
+        "temperature_celsius": 26.0,
+        "humidity_percent": 65.0,
+        "thi": 72.0,
+        "species": "cow",
+        "breed": "gir"
+    }
+    res_milk = client.post("/api/v1/predict/milk-production", json=payload)
+    assert res_milk.status_code == 200
+    assert model_loader.is_cached("milk_production") is True
+    assert model_loader.get_loaded_models_count() == 1
+
+    # 4. Repeated call reuses cached model without increasing count
+    res_milk2 = client.post("/api/v1/predict/milk-production", json=payload)
+    assert res_milk2.status_code == 200
+    assert model_loader.get_loaded_models_count() == 1
+
+    # 5. Call disease endpoint -> lazy-loads disease model (count becomes 2)
+    img_bytes = create_mock_image_bytes()
+    files = {"file": ("disease.jpg", img_bytes, "image/jpeg")}
+    res_disease = client.post("/api/v1/predict/disease", files=files)
+    assert res_disease.status_code == 200
+    assert model_loader.is_cached("cattle_disease") is True
+    assert model_loader.get_loaded_models_count() == 2
+
+    # 6. Unload a model explicitly to test memory reclamation
+    unloaded = model_loader.unload_model("cattle_disease")
+    assert unloaded is True
+    assert model_loader.is_cached("cattle_disease") is False
+    assert model_loader.get_loaded_models_count() == 1
 
 
 def test_models_registry_status(client: TestClient):
@@ -65,7 +114,7 @@ def test_models_registry_status(client: TestClient):
     assert disease_data["status"] == "production"
     assert disease_data["framework"] == "pytorch"
     assert disease_data["is_enabled"] is True
-    assert disease_data["is_cached_in_memory"] is True
+    assert isinstance(disease_data["is_cached_in_memory"], bool)
 
 
 def test_model_not_found(client: TestClient):

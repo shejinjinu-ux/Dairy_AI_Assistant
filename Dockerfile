@@ -1,17 +1,23 @@
 # ==============================================================================
 # Dairy AI Assistant - Production Container Image
-# Optimized for Linux Cloud Deployment (Render / Railway / GCP / AWS / Docker)
+# Optimized for Low-Memory Linux Cloud Deployment (Render Free 512MB / Railway / GCP)
 # ==============================================================================
 
 FROM python:3.11-slim AS base
 
-# Prevent Python from writing .pyc files and enable unbuffered logging
+# Prevent Python from writing .pyc files, enable unbuffered logging, optimize memory
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PYTHONPATH=/app \
     PORT=8000 \
     HOST=0.0.0.0 \
-    FORCE_CPU=true
+    FORCE_CPU=true \
+    OMP_NUM_THREADS=1 \
+    OPENBLAS_NUM_THREADS=1 \
+    MKL_NUM_THREADS=1 \
+    VECLIB_MAXIMUM_THREADS=1 \
+    NUMEXPR_NUM_THREADS=1 \
+    MALLOC_ARENA_MAX=2
 
 WORKDIR /app
 
@@ -50,5 +56,5 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
     CMD curl -f http://127.0.0.1:${PORT:-8000}/health || exit 1
 
-# Launch production ASGI server binding dynamic $PORT injected by cloud provider
-CMD ["sh", "-c", "uvicorn backend.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+# Launch production ASGI server binding dynamic $PORT injected by cloud provider (single worker)
+CMD ["sh", "-c", "uvicorn backend.main:app --host 0.0.0.0 --port ${PORT:-8000} --workers 1"]

@@ -47,9 +47,11 @@ class DiseaseInferenceService:
 
         try:
             tensor = self.transform(image).unsqueeze(0).to(device)
-            with torch.no_grad():
+            with torch.inference_mode():
                 logits = model(tensor)
                 probabilities = torch.softmax(logits, dim=1)[0].cpu().tolist()
+            del tensor
+            del logits
 
             max_idx = max(range(len(classes)), key=probabilities.__getitem__)
             predicted_class = classes[max_idx]

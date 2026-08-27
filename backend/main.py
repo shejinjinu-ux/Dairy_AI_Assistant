@@ -29,24 +29,20 @@ logger = logging.getLogger("dairy_ai.main")
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """
-    Application Lifespan: Pre-warms verified production models on startup.
+    Application Lifespan: Lightweight startup with on-demand lazy loading
+    designed for low-memory container environments (e.g. Render 512MB RAM).
     """
     logger.info("=" * 70)
     logger.info(f"Starting {settings.PROJECT_NAME} v{settings.VERSION}")
     logger.info(f"Compute Device: {model_loader.device}")
+    logger.info("Model Loading Mode: On-Demand Lazy Loading (Zero Eager Preload)")
     logger.info(f"Experimental Models Enabled: {settings.ENABLE_EXPERIMENTAL_MODELS}")
     logger.info("=" * 70)
-
-    # Warmup and preload production models
-    try:
-        results = model_loader.preload_all_production_models()
-        logger.info(f"Production models preload summary: {results}")
-    except Exception as e:
-        logger.error(f"Error during model preload: {e}")
 
     yield
 
     logger.info(f"Shutting down {settings.PROJECT_NAME}...")
+    model_loader.clear_cache()
 
 
 def create_application() -> FastAPI:
