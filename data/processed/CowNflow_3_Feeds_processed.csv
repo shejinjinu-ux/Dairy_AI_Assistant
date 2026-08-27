@@ -1,0 +1,242 @@
+Feed-ID,Experiment-ID,Feed-code-within-experiment,Experiment-number,Feed-name,Feed-category,Detailed-feed-category-INRA2018,Dry-matter-(g/kg),Organic-matter-(g/kg-DM)-,Ash-(g/kg-DM),Crude-protein-(g/kg-DM),Crude-fibre-(g/kg-DM),NDF-(g/kg-DM),ADF-(g/kg-DM),ADL-(g/kg-DM),Starch-(g/kg-DM)
+E01_F01,E01,F01,8308,"Dactylis glomerata, period 1",forage,fresh_herbage,129.0,876.0,124.0,189.0,293.0,602.0,257.0,,
+E01_F02,E01,F02,8308,"Dactylis glomerata + Trifolium repens, period 2",forage,fresh_herbage,125.0,866.0,134.0,200.0,257.0,473.0,245.0,,
+E01_F03,E01,F03,8308,"Dactylis glomerata, period 3",forage,fresh_herbage,192.0,882.0,118.0,173.0,297.0,679.0,305.0,,
+E01_F04,E01,F04,8308,"Dactylis glomerata + Trifolium repens, period 4",forage,fresh_herbage,192.0,888.0,112.0,243.0,170.0,387.0,213.0,,
+E02_F01,E02,F01,8413,"Trifolium repens, cycle 2, 33 days of regrowth",forage,fresh_herbage,112.0,875.0,125.0,242.0,220.0,505.0,233.0,,
+E02_F02,E02,F02,8413,"Trifolium repens, cycle 2, 47 days of regrowth",forage,fresh_herbage,161.0,889.0,111.0,214.0,209.0,509.0,270.0,,
+E02_F03,E02,F03,8413,"Trifolium repens, cycle 2, 61 days of regrowth",forage,fresh_herbage,225.0,899.0,101.0,194.0,219.0,428.0,314.0,,
+E02_F04,E02,F04,8413,"Trifolium repens, cycle 3, 14 days of regrowth",forage,fresh_herbage,125.0,891.0,109.0,295.0,168.0,360.0,188.0,,
+E03_F01,E03,F01,8506a,"Trifolium repens, cycle 1, vegetative",forage,fresh_herbage,,873.0,127.0,256.0,181.0,422.0,,,
+E03_F02,E03,F02,8506a,"Trifolium repens, cycle 1, beginning of flowering",forage,fresh_herbage,,870.0,130.0,241.0,198.0,410.0,,,
+E03_F03,E03,F03,8506a,"Trifolium repens, cycle 1, flowering",forage,fresh_herbage,,869.0,131.0,215.0,213.0,412.0,235.0,,
+E03_F04,E03,F04,8506a,"Trifolium repens, cycle 2, 39 days of regrowth",forage,fresh_herbage,,872.0,128.0,206.0,203.0,473.0,240.0,,
+E03_F05,E03,F05,8506a,"Trifolium repens, cycle 2, 25 days of regrowth",forage,fresh_herbage,,875.0,125.0,224.0,182.0,634.0,223.0,,
+E04_F01,E04,F01,8506b,Lolium perenne,forage,fresh_herbage,,883.0,117.0,176.0,246.0,574.0,240.0,,
+E04_F02,E04,F02,8506b,Dactylis glomerata,forage,fresh_herbage,,891.0,109.0,208.0,254.0,659.0,273.0,,
+E05_F01,E05,F01,8614,"Trifolium repens, vegetative",forage,fresh_herbage,108.0,878.0,121.9,275.0,,340.0,191.0,23.5,
+E05_F02,E05,F02,8614,"Trifolium repens, mature",forage,fresh_herbage,109.0,873.0,127.2,258.0,,352.0,207.0,36.7,
+E05_F03,E05,F03,8614,Beet pulp,concentrate,other_plant_products,895.0,931.0,69.0,95.0,,495.0,257.0,22.5,
+E05_F04,E05,F04,8614,Wheat,concentrate,cereals,868.0,981.0,19.0,128.0,,129.0,42.0,12.9,
+E05_F05,E05,F05,8614,Wheat straw,forage,straw,864.0,920.0,80.0,38.0,,830.0,470.0,90.0,
+E05_F06,E05,F06,8614,Minerals,concentrate,minerals_and_vitamins,,0.0,1000.0,0.0,,,,,
+E06_F01,E06,F01,8815,"Lolium perenne, 28 days of regrowth",forage,fresh_herbage,181.0,891.0,109.3,174.0,230.0,516.0,254.0,28.0,
+E06_F02,E06,F02,8815,"Lolium perenne, 49 days of regrowth",forage,fresh_herbage,198.0,916.0,83.7,95.0,252.0,523.0,266.0,22.0,
+E06_F03,E06,F03,8815,Concentrate,concentrate,compound_feeds,902.0,907.0,93.0,131.0,,279.0,142.0,24.0,
+E06_F04,E06,F04,8815,Minerals ,concentrate,compound_feeds,914.0,66.0,934.3,60.0,,,,,
+E07_F01,E07,F01,9002,Maize silage period 1,forage,maize_silage,,959.0,41.0,86.0,,425.0,202.0,22.0,364.0
+E07_F02,E07,F02,9002,Maize silage period 2,forage,maize_silage,,962.0,38.0,88.0,,418.0,200.0,21.0,371.0
+E07_F03,E07,F03,9002,Maize silage period 3,forage,maize_silage,,960.0,40.0,84.0,,426.0,214.0,23.0,342.0
+E07_F04,E07,F04,9002,Concentrate 1,concentrate,compound_feeds,,916.0,84.0,139.0,,381.0,171.0,31.0,225.0
+E07_F05,E07,F05,9002,Concentrate 2,concentrate,compound_feeds,,926.0,74.0,481.0,,217.0,107.0,26.0,62.0
+E07_F06,E07,F06,9002,Urea,concentrate,other_products,,1000.0,0.0,2870.0,,,,,
+E07_F07,E07,F07,9002,Minerals,concentrate,minerals_and_vitamins,,0.0,1000.0,0.0,,,,,
+E08_F01,E08,F01,9104,Maize silage period 1,forage,maize_silage,,948.0,52.0,93.0,,483.0,250.0,20.0,247.0
+E08_F02,E08,F02,9104,Maize silage period 2,forage,maize_silage,,953.0,47.0,93.0,,503.0,247.0,19.5,246.0
+E08_F03,E08,F03,9104,Maize silage period 3,forage,maize_silage,,943.0,57.0,92.0,,481.0,236.0,20.5,264.0
+E08_F04,E08,F04,9104,Maize silage period 4,forage,maize_silage,,957.0,43.0,87.0,,493.0,234.0,21.0,331.0
+E08_F05,E08,F05,9104,"Dehydrated lucerne, long fibre",forage,dehydrated_lucerne,900.0,884.0,116.0,177.0,,412.0,300.0,69.0,36.0
+E08_F06,E08,F06,9104,"Wheat straw, chopped",forage,straw,921.0,938.0,62.0,34.0,,819.0,494.0,60.0,0.0
+E08_F07,E08,F07,9104,Soyabean meal,concentrate,oil_seed_meals,889.0,934.0,66.0,502.0,,174.0,87.0,10.0,98.0
+E08_F08,E08,F08,9104,"Concentrate starch, rapid degradability",concentrate,compound_feeds,890.0,954.0,46.0,256.0,,169.0,65.0,12.0,467.0
+E08_F09,E08,F09,9104,"Concentrate starch, slow degradability",concentrate,compound_feeds,,960.0,40.0,250.0,,133.0,41.0,7.0,562.0
+E08_F10,E08,F10,9104,"Concentrate fibre, rapid degradability",concentrate,compound_feeds,888.0,911.0,89.0,212.0,,308.0,144.0,20.0,122.0
+E08_F11,E08,F11,9104,"Concentrate fibre, slow degradability",concentrate,compound_feeds,903.0,932.0,68.0,214.0,,518.0,338.0,17.0,96.0
+E09_F01,E09,F01,9111,"Lolium perenne, 80 kg N/ha/cycle, period 1",forage,fresh_herbage,145.0,900.0,100.0,159.0,255.0,531.0,276.0,27.0,
+E09_F02,E09,F02,9111,"Lolium perenne, 0 kg N/ha/cycle, period 1",forage,fresh_herbage,198.0,925.0,75.0,110.0,212.0,470.0,230.0,18.0,
+E09_F03,E09,F03,9111,"Lolium perenne, 80 kg N/ha/cycle, period 2",forage,fresh_herbage,174.0,912.0,88.0,145.0,265.0,524.0,274.0,23.0,
+E09_F04,E09,F04,9111,"Lolium perenne, 0 kg N/ha/cycle, period 2 ",forage,fresh_herbage,211.0,925.0,75.0,107.0,245.0,522.0,275.0,25.0,
+E10_F01,E10,F01,9312,"Lolium perenne, period 1",forage,fresh_herbage,122.0,890.0,110.0,259.0,,483.0,220.0,16.0,
+E10_F02,E10,F02,9312,"Lolium perenne, period 2",forage,fresh_herbage,161.0,874.0,126.0,219.0,,459.0,212.0,16.0,
+E10_F03,E10,F03,9312,"Lolium perenne, period 3 ",forage,fresh_herbage,160.0,870.0,130.0,190.0,,447.0,201.0,13.0,
+E10_F04,E10,F04,9312,"Wheat grain, pelleted",concentrate,cereals,866.0,983.0,17.0,126.0,,122.0,32.0,11.0,
+E11_F01,E11,F01,9313,"Maize silage periods 1, 2, 3",forage,maize_silage,355.0,955.0,45.0,79.0,214.0,437.0,243.0,25.0,288.0
+E11_F02,E11,F02,9313,Maize silage period 4,forage,maize_silage,381.0,959.0,41.0,76.0,238.0,442.0,253.0,24.0,283.0
+E11_F03,E11,F03,9313,Concentrate starch,concentrate,compound_feeds,875.0,950.0,50.0,117.0,32.0,165.0,43.0,9.0,593.0
+E11_F04,E11,F04,9313,Soyabean meal,concentrate,oil_seed_meals,869.0,932.0,68.0,471.0,73.0,164.0,86.0,7.0,84.0
+E11_F05,E11,F05,9313,Mix treated soyabean meal : treated rapeseed meal 80:20,concentrate,compound_feeds,877.0,925.0,75.0,476.0,89.0,243.0,113.0,21.0,43.0
+E11_F06,E11,F06,9313,Urea,concentrate,other_products,,1000.0,0.0,2870.0,,,,,
+E11_F07,E11,F07,9313,Calcium caseinate,concentrate,other_products,924.0,980.0,20.0,937.0,10.0,10.0,8.0,0.0,0.0
+E11_F08,E11,F08,9313,Wheat starch,concentrate,other_plant_products,889.0,998.0,2.0,6.0,2.0,2.0,1.0,0.0,990.0
+E11_F09,E11,F09,9313,Minerals,concentrate,minerals_and_vitamins,,0.0,1000.0,0.0,,,,,
+E12_F01,E12,F01,9502,Dehydrated whole crop maize,forage,dehydrated_maize,922.0,961.0,39.0,80.0,190.0,440.0,213.0,26.0,315.0
+E12_F02,E12,F02,9502,"Hay of Lolium perenne, cycle 3",forage,hay,923.0,931.0,69.0,84.0,343.0,666.0,382.0,39.0,
+E12_F03,E12,F03,9502,Dehydrated lucerne chopped long fibre,forage,dehydrated_lucerne,921.0,865.0,135.0,168.0,289.0,462.0,332.0,78.0,
+E12_F04,E12,F04,9502,Dehydrated lucerne grinded  pellets,forage,dehydrated_lucerne,916.0,866.0,134.0,191.0,248.0,420.0,308.0,87.0,
+E12_F05,E12,F05,9502,Soyabean meal,concentrate,oil_seed_meals,911.0,934.0,66.0,471.0,75.0,170.0,81.0,5.5,60.0
+E12_F06,E12,F06,9502,Energy concentrate ,concentrate,compound_feeds,902.0,956.0,44.0,151.0,24.0,117.0,34.0,8.2,575.0
+E12_F07,E12,F07,9502,Sodium bicarbonate,concentrate,minerals_and_vitamins,,0.0,1000.0,0.0,,,,,
+E13_F01,E13,F01,9513,"Hay of Lolium perenne, cycle 3",forage,hay,933.0,919.0,81.0,121.0,270.0,582.0,292.0,25.0,
+E13_F02,E13,F02,9513,Dehydrated grass period 1,forage,dehydrated_herbage,902.0,897.0,103.0,170.0,212.0,500.0,253.0,37.0,
+E13_F03,E13,F03,9513,Dehydrated grass period 2,forage,dehydrated_herbage,926.0,902.0,98.0,166.0,236.0,511.0,252.0,28.0,
+E13_F04,E13,F04,9513,Dehydrated grass period 3,forage,dehydrated_herbage,920.0,897.0,103.0,165.0,226.0,515.0,257.0,37.0,
+E13_F05,E13,F05,9513,Dehydrated grass period 4,forage,dehydrated_herbage,918.0,898.0,102.0,161.0,220.0,506.0,244.0,31.0,
+E13_F06,E13,F06,9513,Dehydrated grass period 5,forage,dehydrated_herbage,924.0,900.0,100.0,167.0,227.0,517.0,262.0,41.0,
+E13_F07,E13,F07,9513,Wheat concentrate,concentrate,compound_feeds,869.0,976.0,24.0,114.0,26.0,161.0,32.0,8.5,
+E13_F08,E13,F08,9513,Beet pulp,concentrate,other_plant_products,926.0,902.0,98.0,93.0,185.0,487.0,231.0,27.0,
+E13_F09,E13,F09,9513,Soya bean hulls,concentrate,compound_feeds,888.0,941.0,59.0,127.0,350.0,587.0,425.0,19.5,
+E13_F10,E13,F10,9513,Protected soyabean meal,concentrate,oil_seed_meals,879.0,932.0,68.0,475.0,67.0,189.0,85.0,7.4,
+E13_F11,E13,F11,9513,Minerals,concentrate,minerals_and_vitamins,,0.0,1000.0,0.0,,,,,
+E14_F01,E14,F01,9514,Maize silage,forage,maize_silage,412.0,963.0,37.0,71.0,272.0,504.0,311.0,43.0,224.0
+E14_F02,E14,F02,9514,Dehydrated whole crop maize,forage,dehydrated_maize,922.0,964.0,36.0,75.0,163.0,403.0,205.0,20.0,370.0
+E14_F03,E14,F03,9514,Dehydrated lucerne,forage,dehydrated_lucerne,888.0,866.0,134.0,213.0,223.0,394.0,260.0,84.0,31.0
+E14_F04,E14,F04,9514,Protected soyabean meal,concentrate,oil_seed_meals,889.0,934.0,66.0,478.0,64.0,172.0,79.0,4.0,95.0
+E14_F05,E14,F05,9514,"Concentrate, rapid degradability",concentrate,compound_feeds,898.0,929.0,71.0,172.0,69.0,174.0,93.0,12.0,321.0
+E14_F06,E14,F06,9514,"Concentrate, slow degradability",concentrate,compound_feeds,894.0,936.0,64.0,140.0,169.0,323.0,207.0,10.0,371.0
+E14_F07,E14,F07,9514,Urea,concentrate,other_products,,1000.0,0.0,2870.0,,,,,
+E14_F08,E14,F08,9514,Additives,concentrate,minerals_and_vitamins,,243.0,757.0,0.0,,,,,
+E14_F09,E14,F09,9514,Smartamine Methionine - Lysine,concentrate,other_products,,1000.0,0.0,600.0,,,,,
+E14_F10,E14,F10,9514,Smartamine Methionine ,concentrate,other_products,,1000.0,0.0,449.0,,,,,
+E14_F11,E14,F11,9514,Minerals,concentrate,minerals_and_vitamins,,0.0,1000.0,0.0,,,,,
+E15_F01,E15,F01,9603,Maize silage period 1,forage,maize_silage,355.0,961.0,39.0,66.0,222.0,499.0,260.0,28.0,286.0
+E15_F02,E15,F02,9603,Maize silage period 2,forage,maize_silage,355.0,957.0,43.0,67.0,238.0,527.0,282.0,31.0,246.0
+E15_F03,E15,F03,9603,Maize silage period 3,forage,maize_silage,355.0,960.0,40.0,67.0,241.0,524.0,276.0,30.0,239.0
+E15_F04,E15,F04,9603,Maize silage period 4,forage,maize_silage,355.0,957.0,43.0,69.0,247.0,550.0,299.0,34.0,240.0
+E15_F05,E15,F05,9603,Dehydrated whole crop maize,forage,dehydrated_maize,918.0,964.0,36.0,78.0,183.0,438.0,210.0,23.0,320.0
+E15_F06,E15,F06,9603,Dehydrated lucerne chopped long fibre,forage,dehydrated_lucerne,905.0,878.0,122.0,197.0,259.0,452.0,278.0,68.0,60.0
+E15_F07,E15,F07,9603,Dehydrated lucerne grinded pellets,forage,dehydrated_lucerne,906.0,871.0,129.0,177.0,258.0,467.0,309.0,78.0,30.0
+E15_F08,E15,F08,9603,Concentrate,concentrate,compound_feeds,891.0,937.0,63.0,248.0,39.0,154.0,48.0,5.0,482.0
+E16_F01,E16,F01,9605,Maize silage,forage,maize_silage,338.0,960.0,40.0,63.0,222.0,471.0,,23.0,248.0
+E16_F02,E16,F02,9605,"Concentrate, slow degradability",concentrate,compound_feeds,912.0,916.0,83.9,140.0,155.0,295.0,184.0,7.2,326.0
+E16_F03,E16,F03,9605,Soyabean meal,concentrate,oil_seed_meals,933.0,930.0,70.0,505.0,87.0,208.0,103.0,7.8,51.0
+E16_F04,E16,F04,9605,Urea,concentrate,other_products,,1000.0,0.0,2870.0,,,,,
+E16_F05,E16,F05,9605,Minerals,concentrate,minerals_and_vitamins,,0.0,1000.0,0.0,,,,,
+E16_F06,E16,F06,9605,Chromic oxide concentrate,concentrate,compound_feeds,,905.0,94.8,167.0,,,,,
+E16_F07,E16,F07,9605,Ytterbium oxide concentrate,concentrate,compound_feeds,,920.0,79.7,267.0,,,,,
+E17_F01,E17,F01,0208,"Lolium perenne, low WSC/N ratio, period 1 ",forage,fresh_herbage,179.0,906.0,94.0,209.0,,460.0,235.0,13.2,
+E17_F02,E17,F02,0208,"Lolium perenne, low WSC/N ratio, period 2",forage,fresh_herbage,169.0,907.0,93.0,196.0,,479.0,247.0,15.2,
+E17_F03,E17,F03,0208,"Lolium perenne, low WSC/N ratio, period 3 ",forage,fresh_herbage,181.0,906.0,94.0,217.0,,484.0,243.0,18.5,
+E17_F04,E17,F04,0208,"Lolium perenne, high WSC/N ratio, period 1",forage,fresh_herbage,235.0,916.0,84.0,129.0,,449.0,224.0,12.8,
+E17_F05,E17,F05,0208,"Lolium perenne, high WSC/N ratio, period 2",forage,fresh_herbage,210.0,927.0,73.0,122.0,,447.0,221.0,12.2,
+E17_F06,E17,F06,0208,"Lolium perenne, high WSC/N ratio, period 3",forage,fresh_herbage,232.0,921.0,79.0,123.0,,496.0,249.0,15.5,
+E18_F01,E18,F01,0216,Maize silage,forage,maize_silage,,966.0,34.0,81.0,183.0,404.0,202.0,17.0,326.0
+E18_F02,E18,F02,0216,Concentrate,concentrate,compound_feeds,896.0,937.0,63.0,163.0,91.0,282.0,125.0,34.0,355.0
+E18_F03,E18,F03,0216,Protected soyabean meal,concentrate,oil_seed_meals,,935.0,65.0,483.0,65.0,163.0,82.0,7.0,
+E18_F04,E18,F04,0216,Urea,concentrate,other_products,,1000.0,0.0,2870.0,,,,,
+E18_F05,E18,F05,0216,Lucerne serum,concentrate,other_plant_products,,770.0,230.0,230.0,,,,,
+E18_F06,E18,F06,0216,Minerals,concentrate,minerals_and_vitamins,,0.0,1000.0,0.0,,,,,
+E19_F01,E19,F01,0505,Lolium perenne period 1 ,forage,fresh_herbage,121.0,878.0,121.7,177.0,239.0,523.0,259.0,16.7,
+E19_F02,E19,F02,0505,Lolium perenne period 2,forage,fresh_herbage,129.0,894.0,106.5,161.0,241.0,527.0,260.0,15.0,
+E19_F03,E19,F03,0505,Lolium perenne period 3 ,forage,fresh_herbage,137.0,898.0,102.4,198.0,236.0,524.0,252.0,15.8,
+E19_F04,E19,F04,0505,Lolium perenne period 4 ,forage,fresh_herbage,184.0,903.0,97.4,165.0,238.0,541.0,254.0,20.1,
+E19_F05,E19,F05,0505,Maize silage period 1,forage,maize_silage,323.0,957.0,43.0,80.0,191.0,395.0,209.0,22.0,
+E19_F06,E19,F06,0505,Maize silage period 2,forage,maize_silage,334.0,955.0,45.0,75.0,206.0,441.0,226.0,28.0,
+E19_F07,E19,F07,0505,Maize silage period 3,forage,maize_silage,346.0,964.0,36.0,74.0,192.0,425.0,210.0,23.0,
+E19_F08,E19,F08,0505,Maize silage period 4,forage,maize_silage,347.0,965.0,35.0,74.0,192.0,404.0,210.0,24.0,
+E19_F09,E19,F09,0505,Soyabean meal,concentrate,oil_seed_meals,889.0,927.0,73.0,510.0,57.0,133.0,72.0,5.7,
+E19_F10,E19,F10,0505,Ytterbium oxide concentrate,concentrate,compound_feeds,889.0,969.0,31.0,156.0,36.0,168.0,44.0,7.1,
+E20_F01,E20,F01,0810,Maize silage period 1,forage,maize_silage,286.0,959.0,41.0,75.0,,442.0,229.0,20.8,334.0
+E20_F02,E20,F02,0810,Maize silage period 2,forage,maize_silage,304.0,960.0,40.0,75.0,,411.0,225.0,20.1,334.0
+E20_F03,E20,F03,0810,Maize silage period 3,forage,maize_silage,292.0,956.0,44.0,74.0,,421.0,228.0,20.1,334.0
+E20_F04,E20,F04,0810,Maize silage period 4,forage,maize_silage,301.0,960.0,40.0,73.0,,396.0,216.0,19.2,334.0
+E20_F05,E20,F05,0810,Soyabean meal mix,concentrate,compound_feeds,899.0,929.0,71.0,510.0,,349.0,88.0,4.6,
+E20_F06,E20,F06,0810,Protected soyabean meal,concentrate,oil_seed_meals,890.0,923.0,77.0,509.0,,341.0,91.0,5.1,
+E20_F07,E20,F07,0810,Mix concentrate,concentrate,compound_feeds,888.0,952.0,48.0,142.0,,256.0,93.0,15.0,
+E20_F08,E20,F08,0810,Urea,concentrate,other_products,,1000.0,0.0,2870.0,,,,,
+E20_F09,E20,F09,0810,Minerals,concentrate,minerals_and_vitamins,,0.0,1000.0,0.0,,,,,
+E21_F01,E21,F01,1017,Maize silage period 1,forage,maize_silage,348.0,957.0,43.0,95.0,214.0,463.0,247.0,23.1,262.0
+E21_F02,E21,F02,1017,Maize silage period 2,forage,maize_silage,350.0,963.0,36.6,66.0,,404.0,218.0,20.1,260.0
+E21_F03,E21,F03,1017,Soyabean meal mix period 1,concentrate,compound_feeds,887.0,928.0,71.8,496.0,,242.0,93.0,7.0,
+E21_F04,E21,F04,1017,Soyabean meal mix period 2,concentrate,compound_feeds,887.0,927.0,72.9,495.0,,260.0,90.0,6.3,
+E21_F05,E21,F05,1017,Minerals,concentrate,minerals_and_vitamins,,0.0,1000.0,0.0,,,,,
+E22_F01,E22,F01,1117,Dehydrated whole crop maize period 1,forage,dehydrated_maize,922.0,966.0,33.8,75.0,,,,,
+E22_F02,E22,F02,1117,Dehydrated whole crop maize period 2,forage,dehydrated_maize,919.0,965.0,35.0,73.0,,,,,
+E22_F03,E22,F03,1117,Dehydrated whole crop maize period 3,forage,dehydrated_maize,923.0,966.0,34.1,73.0,,,,,
+E22_F04,E22,F04,1117,Dehydrated whole crop maize period 4,forage,dehydrated_maize,926.0,966.0,34.3,72.0,,,,,
+E22_F05,E22,F05,1117,"Hay, natural grassland period 1",forage,hay,874.0,930.0,70.0,80.0,,,,,
+E22_F06,E22,F06,1117,"Hay, natural grassland period 2",forage,hay,887.0,906.0,94.1,105.0,,,,,
+E22_F07,E22,F07,1117,"Hay, natural grassland period 3",forage,hay,863.0,923.0,77.5,78.0,,,,,
+E22_F08,E22,F08,1117,"Hay, natural grassland period 4",forage,hay,886.0,916.0,83.7,84.0,,,,,
+E22_F09,E22,F09,1117,"Mix concentrate, high-degradable-N, medium-metabolisable-N, period 1",concentrate,compound_feeds,880.0,949.0,50.6,387.0,,,,,
+E22_F10,E22,F10,1117,"Mix concentrate, high-degradable-N, medium-metabolisable-N, period 2",concentrate,compound_feeds,876.0,949.0,51.1,392.0,,,,,
+E22_F11,E22,F11,1117,"Mix concentrate, high-degradable-N, medium-metabolisable-N, period 3",concentrate,compound_feeds,875.0,948.0,51.6,389.0,,,,,
+E22_F12,E22,F12,1117,"Mix concentrate, high-degradable-N, medium-metabolisable-N, period 4",concentrate,compound_feeds,874.0,949.0,50.6,387.0,,,,,
+E22_F13,E22,F13,1117,"Mix concentrate, high-degradable-N, high-metabolisable-N, period 1",concentrate,compound_feeds,884.0,937.0,63.3,332.0,,,,,
+E22_F14,E22,F14,1117,"Mix concentrate, high-degradable-N, high-metabolisable-N, period 2",concentrate,compound_feeds,883.0,938.0,61.9,333.0,,,,,
+E22_F15,E22,F15,1117,"Mix concentrate, high-degradable-N, high-metabolisable-N, period 3",concentrate,compound_feeds,874.0,938.0,62.3,335.0,,,,,
+E22_F16,E22,F16,1117,"Mix concentrate, high-degradable-N, high-metabolisable-N, period 4",concentrate,compound_feeds,872.0,938.0,61.9,335.0,,,,,
+E22_F17,E22,F17,1117,"Mix concentrate, medium-degradable-N, medium-metabolisable-N, period 1",concentrate,compound_feeds,898.0,938.0,61.8,324.0,,,,,
+E22_F18,E22,F18,1117,"Mix concentrate, medium-degradable-N, medium-metabolisable-N, period 2",concentrate,compound_feeds,896.0,941.0,59.4,288.0,,,,,
+E22_F19,E22,F19,1117,"Mix concentrate, medium-degradable-N, medium-metabolisable-N, period 3",concentrate,compound_feeds,899.0,940.0,59.8,283.0,,,,,
+E22_F20,E22,F20,1117,"Mix concentrate, medium-degradable-N, medium-metabolisable-N, period 4",concentrate,compound_feeds,911.0,941.0,59.2,284.0,,,,,
+E22_F21,E22,F21,1117,"Mix concentrate, low-degradable-N, medium-metabolisable-N, period 1",concentrate,compound_feeds,891.0,939.0,61.1,191.0,,,,,
+E22_F22,E22,F22,1117,"Mix concentrate, low-degradable-N, medium-metabolisable-N, period 2",concentrate,compound_feeds,892.0,938.0,62.1,198.0,,,,,
+E22_F23,E22,F23,1117,"Mix concentrate, low-degradable-N, medium-metabolisable-N, period 3",concentrate,compound_feeds,891.0,939.0,61.5,193.0,,,,,
+E22_F24,E22,F24,1117,"Mix concentrate, low-degradable-N, medium-metabolisable-N, period 4",concentrate,compound_feeds,894.0,938.0,62.0,198.0,,,,,
+E22_F25,E22,F25,1117,Minerals,concentrate,minerals_and_vitamins,1000.0,0.0,1000.0,0.0,,,,,
+E23_F01,E23,F01,1213,Maize silage period 1,forage,maize_silage,335.0,964.0,36.0,77.0,,350.0,174.0,20.4,
+E23_F02,E23,F02,1213,Maize silage period 2,forage,maize_silage,365.0,964.0,36.0,77.0,,350.0,174.0,20.4,
+E23_F03,E23,F03,1213,Maize silage period 3,forage,maize_silage,311.0,965.0,35.0,68.0,,388.0,202.0,22.5,
+E23_F04,E23,F04,1213,Maize silage period 4,forage,maize_silage,321.0,965.0,35.0,68.0,,388.0,202.0,22.5,
+E23_F05,E23,F05,1213,High-N concentrate period 1,concentrate,compound_feeds,903.0,902.0,98.0,597.0,,261.0,75.0,6.5,
+E23_F06,E23,F06,1213,Low-N concentrate period 2 ,concentrate,compound_feeds,893.0,903.0,97.0,316.0,,261.0,79.0,9.0,
+E23_F07,E23,F07,1213,High-N concentrate period 3,concentrate,compound_feeds,898.0,903.0,97.0,316.0,,242.0,75.0,8.5,
+E23_F08,E23,F08,1213,Low-N concentrate period 4,concentrate,compound_feeds,900.0,899.0,101.0,597.0,,253.0,65.0,6.1,
+E24_F01,E24,F01,1303,Lolium perenne period 1 ,forage,fresh_herbage,180.0,898.0,102.0,166.0,,508.0,241.0,24.5,4.0
+E24_F02,E24,F02,1303,Lolium perenne period 2,forage,fresh_herbage,191.0,913.0,86.8,142.0,,516.0,254.0,22.2,7.0
+E24_F03,E24,F03,1303,Lolium perenne period 3 ,forage,fresh_herbage,165.0,905.0,95.3,162.0,,563.0,272.0,26.1,7.0
+E24_F04,E24,F04,1303,Lolium perenne period 4 ,forage,fresh_herbage,204.0,901.0,99.0,115.0,,526.0,264.0,24.2,11.0
+E24_F05,E24,F05,1303,Wet maize grain period 1,concentrate,cereals,630.0,982.0,17.5,88.0,,119.0,30.0,5.5,658.0
+E24_F06,E24,F06,1303,Wet maize grain period 2,concentrate,cereals,622.0,983.0,17.1,99.0,,132.0,34.0,5.0,608.0
+E24_F07,E24,F07,1303,Wet maize grain period 3,concentrate,cereals,626.0,983.0,17.2,97.0,,120.0,33.0,4.4,615.0
+E24_F08,E24,F08,1303,Wet maize grain period 4,concentrate,cereals,625.0,983.0,16.8,97.0,,125.0,32.0,3.4,589.0
+E24_F09,E24,F09,1303,Dry maize grain,concentrate,cereals,899.0,983.0,16.8,93.0,,202.0,34.0,6.1,611.0
+E24_F10,E24,F10,1303,Minerals,concentrate,minerals_and_vitamins,1000.0,0.0,1000.0,0.0,,,,,
+E25_F01,E25,F01,1408,Lolium perenne 100% period 1 ,forage,fresh_herbage,184.0,887.0,113.0,138.0,,545.0,277.0,25.3,
+E25_F02,E25,F02,1408,Lolium perenne 60% + Trifolium repens 40% period 1,forage,fresh_herbage,148.0,891.0,109.0,181.0,,492.0,279.0,46.9,
+E25_F03,E25,F03,1408,Lolium perenne 60% + Cichorium intybus 40% period 1 ,forage,fresh_herbage,124.0,854.0,145.5,151.0,,429.0,274.0,61.4,
+E25_F04,E25,F04,1408,Lolium perenne 100% period 2 ,forage,fresh_herbage,182.0,909.0,91.2,103.0,,523.0,267.0,20.4,
+E25_F05,E25,F05,1408,Lolium perenne 60% + Trifolium repens 40% period 2 ,forage,fresh_herbage,124.0,884.0,116.3,177.0,,516.0,294.0,42.3,
+E25_F06,E25,F06,1408,Lolium perenne 60% + Cichorium intybus 40% period 2,forage,fresh_herbage,134.0,872.0,128.1,118.0,,479.0,293.0,49.9,
+E25_F07,E25,F07,1408,Lolium perenne 100% period 3,forage,fresh_herbage,199.0,884.0,116.5,108.0,,534.0,269.0,21.4,
+E25_F08,E25,F08,1408,Lolium perenne 60% + Trifolium repens 40% period 3,forage,fresh_herbage,149.0,888.0,112.4,172.0,,494.0,304.0,63.8,
+E25_F09,E25,F09,1408,Lolium perenne 60% + Cichorium intybus 40% period 3 ,forage,fresh_herbage,155.0,874.0,126.3,121.0,,493.0,286.0,52.0,
+E26_F01,E26,F01,1702a,"Maize silage period 1, high temperature",forage,maize_silage,322.0,957.0,43.3,62.0,,474.0,235.0,19.0,
+E26_F02,E26,F02,1702a,"Maize silage period 1, neutral temperature",forage,maize_silage,316.0,958.0,41.7,60.0,,513.0,244.0,20.8,
+E26_F03,E26,F03,1702a,"Maize silage period 2, high temperature",forage,maize_silage,284.0,959.0,41.2,67.0,,509.0,248.0,23.9,
+E26_F04,E26,F04,1702a,"Maize silage period 2, neutral temperature",forage,maize_silage,280.0,959.0,40.6,64.0,,545.0,263.0,25.7,
+E26_F05,E26,F05,1702a,"Maize silage period 3, high temperature",forage,maize_silage,291.0,956.0,44.1,65.0,,572.0,283.0,28.2,
+E26_F06,E26,F06,1702a,"Maize silage period 3, neutral temperature",forage,maize_silage,291.0,962.0,37.8,60.0,,573.0,253.0,25.4,
+E26_F07,E26,F07,1702a,"Maize silage period 4, high temperature",forage,maize_silage,308.0,963.0,36.9,62.0,,513.0,244.0,21.4,
+E26_F08,E26,F08,1702a,"Maize silage period 4, neutral temperature",forage,maize_silage,301.0,960.0,40.2,65.0,,515.0,255.0,20.0,
+E26_F09,E26,F09,1702a,Mix concentrate period 1,concentrate,compound_feeds,896.0,952.0,47.6,109.0,,318.0,112.0,15.9,
+E26_F10,E26,F10,1702a,Mix concentrate period 2,concentrate,compound_feeds,867.0,950.0,49.8,114.0,,301.0,109.0,15.8,
+E26_F11,E26,F11,1702a,Mix concentrate period 3,concentrate,compound_feeds,903.0,953.0,47.3,116.0,,281.0,103.0,15.9,
+E26_F12,E26,F12,1702a,Mix concentrate period 4,concentrate,compound_feeds,897.0,954.0,46.4,122.0,,260.0,97.0,13.0,
+E26_F13,E26,F13,1702a,Soyabean meal period 1,concentrate,oil_seed_meals,897.0,927.0,73.2,502.0,,391.0,77.0,6.7,
+E26_F14,E26,F14,1702a,Soyabean meal period 2,concentrate,oil_seed_meals,897.0,927.0,72.8,505.0,,269.0,74.0,7.6,
+E26_F15,E26,F15,1702a,Soyabean meal period 3,concentrate,oil_seed_meals,898.0,917.0,83.0,499.0,,297.0,93.0,6.7,
+E26_F16,E26,F16,1702a,Soyabean meal period 4,concentrate,oil_seed_meals,902.0,931.0,69.0,494.0,,283.0,78.0,6.5,
+E26_F17,E26,F17,1702a,Urea,concentrate,other_products,1000.0,1000.0,0.0,2875.0,,,,,
+E26_F18,E26,F18,1702a,Minerals,concentrate,minerals_and_vitamins,1000.0,0.0,1000.0,0.0,,,,,
+E27_F01,E27,F01,1702b,"Maize silage period 1, high temperature",forage,maize_silage,322.0,957.0,43.3,62.0,,474.0,235.0,19.0,
+E27_F02,E27,F02,1702b,"Maize silage period 1, neutral temperature",forage,maize_silage,316.0,958.0,41.7,60.0,,513.0,244.0,20.8,
+E27_F03,E27,F03,1702b,"Maize silage period 2, high temperature",forage,maize_silage,284.0,959.0,41.2,67.0,,509.0,248.0,23.9,
+E27_F04,E27,F04,1702b,"Maize silage period 2, neutral temperature",forage,maize_silage,280.0,959.0,40.6,64.0,,545.0,263.0,25.7,
+E27_F05,E27,F05,1702b,"Maize silage period 3, high temperature",forage,maize_silage,291.0,956.0,44.1,65.0,,572.0,283.0,28.2,
+E27_F06,E27,F06,1702b,"Maize silage period 3, neutral temperature",forage,maize_silage,291.0,962.0,37.8,60.0,,573.0,253.0,25.4,
+E27_F07,E27,F07,1702b,"Maize silage period 4, high temperature",forage,maize_silage,308.0,963.0,36.9,62.0,,513.0,244.0,21.4,
+E27_F08,E27,F08,1702b,"Maize silage period 4, neutral temperature",forage,maize_silage,301.0,960.0,40.2,65.0,,515.0,255.0,20.0,
+E27_F09,E27,F09,1702b,Mix concentrate period 1,concentrate,compound_feeds,896.0,952.0,47.6,109.0,,318.0,112.0,15.9,
+E27_F10,E27,F10,1702b,Mix concentrate period 2,concentrate,compound_feeds,867.0,950.0,49.8,114.0,,301.0,109.0,15.8,
+E27_F11,E27,F11,1702b,Mix concentrate period 3,concentrate,compound_feeds,903.0,953.0,47.3,116.0,,281.0,103.0,15.9,
+E27_F12,E27,F12,1702b,Mix concentrate period 4,concentrate,compound_feeds,897.0,954.0,46.4,122.0,,260.0,97.0,13.0,
+E27_F13,E27,F13,1702b,Soyabean meal period 1,concentrate,oil_seed_meals,897.0,927.0,73.2,502.0,,391.0,77.0,6.7,
+E27_F14,E27,F14,1702b,Soyabean meal period 2,concentrate,oil_seed_meals,897.0,927.0,72.8,505.0,,269.0,74.0,7.6,
+E27_F15,E27,F15,1702b,Soyabean meal period 3,concentrate,oil_seed_meals,898.0,917.0,83.0,499.0,,297.0,93.0,6.7,
+E27_F16,E27,F16,1702b,Soyabean meal period 4,concentrate,oil_seed_meals,902.0,931.0,69.0,494.0,,283.0,78.0,6.5,
+E27_F17,E27,F17,1702b,Urea,concentrate,other_products,1000.0,1000.0,0.0,2875.0,,,,,
+E27_F18,E27,F18,1702b,Minerals,concentrate,minerals_and_vitamins,1000.0,0.0,1000.0,0.0,,,,,
+E28_F01,E28,F01,1901,Maize silage period 1,forage,maize_silage,335.0,960.0,40.5,65.0,,409.0,200.0,18.2,
+E28_F02,E28,F02,1901,Maize silage period 2,forage,maize_silage,319.0,958.0,41.7,70.0,,400.0,221.0,18.2,
+E28_F03,E28,F03,1901,Maize silage period 3,forage,maize_silage,321.0,958.0,42.0,69.0,,406.0,213.0,17.9,
+E28_F04,E28,F04,1901,Maize silage period 4,forage,maize_silage,314.0,958.0,41.8,67.0,,411.0,230.0,19.5,
+E28_F05,E28,F05,1901,Soyabean meal period 1,concentrate,oil_seed_meals,892.0,929.0,70.8,489.0,,269.0,74.0,4.0,
+E28_F06,E28,F06,1901,Soyabean meal period 2,concentrate,oil_seed_meals,901.0,931.0,69.3,499.0,,186.0,67.0,4.3,
+E28_F07,E28,F07,1901,Soyabean meal period 3,concentrate,oil_seed_meals,903.0,931.0,68.8,504.0,,201.0,63.0,4.9,
+E28_F08,E28,F08,1901,Soyabean meal period 4,concentrate,oil_seed_meals,903.0,927.0,72.8,498.0,,200.0,58.0,3.7,
+E28_F09,E28,F09,1901,Mix concentrate period 1,concentrate,compound_feeds,901.0,953.0,47.3,115.0,,242.0,94.0,10.7,
+E28_F10,E28,F10,1901,Mix concentrate period 2,concentrate,compound_feeds,905.0,955.0,45.4,118.0,,225.0,75.0,9.9,
+E28_F11,E28,F11,1901,Mix concentrate period 3,concentrate,compound_feeds,908.0,952.0,47.7,124.0,,216.0,79.0,10.0,
+E28_F12,E28,F12,1901,Mix concentrate period 4,concentrate,compound_feeds,874.0,955.0,45.3,115.0,,215.0,84.0,9.8,
+E28_F13,E28,F13,1901,Minerals,concentrate,minerals_and_vitamins,1000.0,0.0,1000.0,0.0,,,,,

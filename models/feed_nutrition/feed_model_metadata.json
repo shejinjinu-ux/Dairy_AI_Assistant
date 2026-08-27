@@ -1,0 +1,76 @@
+{
+  "dataset": "datasets\\extracted\\feed_nutrition\\CowNflow_3_Feeds.tab",
+  "dataset_rows": 241,
+  "targets": [
+    "crude_protein",
+    "dry_matter",
+    "crude_fibre",
+    "ndf",
+    "adf",
+    "adl",
+    "starch"
+  ],
+  "results": {
+    "crude_protein": {
+      "target_column": "Crude-protein-(g/kg-DM)",
+      "valid_rows": 241,
+      "mae": 64.7857806421056,
+      "rmse": 172.7886320918521,
+      "r2": 0.931748984624136,
+      "model_path": "models\\feed_nutrition\\feed_crude_protein_xgboost.joblib"
+    },
+    "dry_matter": {
+      "target_column": "Dry-matter-(g/kg)",
+      "valid_rows": 200,
+      "mae": 28.267100143432618,
+      "rmse": 52.275108180843326,
+      "r2": 0.9734963407629801,
+      "model_path": "models\\feed_nutrition\\feed_dry_matter_xgboost.joblib"
+    },
+    "crude_fibre": {
+      "target_column": "Crude-fibre-(g/kg-DM)",
+      "valid_rows": 75,
+      "mae": 17.952860005696614,
+      "rmse": 25.79826496792061,
+      "r2": 0.8205925857689191,
+      "model_path": "models\\feed_nutrition\\feed_crude_fibre_xgboost.joblib"
+    },
+    "ndf": {
+      "target_column": "NDF-(g/kg-DM)",
+      "valid_rows": 187,
+      "mae": 31.761597683555202,
+      "rmse": 57.37915144505193,
+      "r2": 0.8555741088618076,
+      "model_path": "models\\feed_nutrition\\feed_ndf_xgboost.joblib"
+    },
+    "adf": {
+      "target_column": "ADF-(g/kg-DM)",
+      "valid_rows": 184,
+      "mae": 19.980363536525417,
+      "rmse": 34.74367841690048,
+      "r2": 0.8512795724343718,
+      "model_path": "models\\feed_nutrition\\feed_adf_xgboost.joblib"
+    },
+    "adl": {
+      "target_column": "ADL-(g/kg-DM)",
+      "valid_rows": 172,
+      "mae": 4.949023723602295,
+      "rmse": 7.932070681791926,
+      "r2": 0.7648819728058559,
+      "model_path": "models\\feed_nutrition\\feed_adl_xgboost.joblib"
+    },
+    "starch": {
+      "target_column": "Starch-(g/kg-DM)",
+      "valid_rows": 60,
+      "mae": 20.483359575271606,
+      "rmse": 30.679029952473343,
+      "r2": 0.9588142584582485,
+      "model_path": "models\\feed_nutrition\\feed_starch_xgboost.joblib"
+    }
+  },
+  "limitations": [
+    "Dataset does not contain direct energy variables.",
+    "Dataset does not contain direct mineral variables.",
+    "Predictions apply to nutritional variables represented in the dataset."
+  ]
+}

@@ -1,0 +1,65 @@
+{
+  "dataset": "datasets\\extracted\\milk_quality\\milk_nir_composition.csv",
+  "samples": 1224,
+  "spectral_features": 1024,
+  "targets": [
+    "Fat",
+    "Prot",
+    "Lact",
+    "SCC",
+    "Urea"
+  ],
+  "results": {
+    "Fat": {
+      "selected_model": "xgboost",
+      "mae": 0.17365241461384057,
+      "rmse": 0.2821115260462335,
+      "r2": 0.8792419923775538,
+      "test_rows": 245,
+      "spectral_features": 1024,
+      "pca_components": 95,
+      "model_path": "models\\milk_quality_nir_corrected\\milk_quality_fat_xgboost.joblib"
+    },
+    "Prot": {
+      "selected_model": "xgboost",
+      "mae": 0.19176680642731336,
+      "rmse": 0.2545305271782716,
+      "r2": 0.43045642247694915,
+      "test_rows": 245,
+      "spectral_features": 1024,
+      "pca_components": 95,
+      "model_path": "models\\milk_quality_nir_corrected\\milk_quality_prot_xgboost.joblib"
+    },
+    "Lact": {
+      "selected_model": "xgboost",
+      "mae": 0.10901109897847078,
+      "rmse": 0.14809203697663492,
+      "r2": 0.22302477964034206,
+      "test_rows": 245,
+      "spectral_features": 1024,
+      "pca_components": 95,
+      "model_path": "models\\milk_quality_nir_corrected\\milk_quality_lact_xgboost.joblib"
+    },
+    "SCC": {
+      "selected_model": "xgboost",
+      "mae": 185.9175262451172,
+      "rmse": 340.84914643431335,
+      "r2": -0.334236741065979,
+      "test_rows": 245,
+      "spectral_features": 1024,
+      "pca_components": 95,
+      "model_path": "models\\milk_quality_nir_corrected\\milk_quality_scc_xgboost.joblib"
+    },
+    "Urea": {
+      "selected_model": "random_forest",
+      "mae": 3.545714285714286,
+      "rmse": 4.399990342186886,
+      "r2": 0.2524304662435731,
+      "test_rows": 245,
+      "spectral_features": 1024,
+      "pca_components": 95,
+      "model_path": "models\\milk_quality_nir_corrected\\milk_quality_urea_random_forest.joblib"
+    }
+  },
+  "random_state": 42
+}

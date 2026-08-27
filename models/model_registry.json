@@ -1,0 +1,119 @@
+{
+  "version": "1.0",
+  "models": {
+    "cattle_disease": {
+      "status": "production",
+      "framework": "pytorch",
+      "task": "image_classification",
+      "path": "models/cattle_disease/cattle_disease_efficientnet_b3.pth",
+      "outputs": ["FMD", "IBK", "LSD", "Normal"],
+      "accuracy": 0.9892940782870525
+    },
+    "cattle_breed": {
+      "status": "production",
+      "framework": "pytorch",
+      "task": "breed_classification",
+      "path": "models/cattle_breed/Indian_bovine_finetuned_model.pth",
+      "classes_path": "models/cattle_breed/classes.json",
+      "classes": 41
+    },
+    "milk_production": {
+      "status": "production",
+      "framework": "xgboost",
+      "task": "regression",
+      "path": "models/milk_production/milk_production_xgboost.joblib",
+      "target": "Milk_Yield_L",
+      "r2": 0.946193
+    },
+    "silage_quality_classifier": {
+      "status": "production",
+      "framework": "xgboost",
+      "task": "classification",
+      "path": "models/silage/silage_quality_classifier.joblib",
+      "outputs": ["ea", "la"],
+      "accuracy": 0.9719298245614035,
+      "f1_macro": 0.9671204430087679
+    },
+    "silage_fqi": {
+      "status": "production",
+      "framework": "xgboost",
+      "task": "regression",
+      "path": "models/silage/silage_fqi_regressor.joblib",
+      "target": "FQI",
+      "r2": 0.9719343642703555
+    },
+    "feed_crude_protein": {
+      "status": "production",
+      "framework": "xgboost",
+      "task": "regression",
+      "path": "models/feed_nutrition/feed_crude_protein_xgboost.joblib",
+      "target": "Crude Protein"
+    },
+    "feed_dry_matter": {
+      "status": "production",
+      "framework": "xgboost",
+      "task": "regression",
+      "path": "models/feed_nutrition/feed_dry_matter_xgboost.joblib",
+      "target": "Dry Matter"
+    },
+    "feed_crude_fibre": {
+      "status": "production",
+      "framework": "xgboost",
+      "task": "regression",
+      "path": "models/feed_nutrition/feed_crude_fibre_xgboost.joblib",
+      "target": "Crude Fibre"
+    },
+    "feed_ndf": {
+      "status": "production",
+      "framework": "xgboost",
+      "task": "regression",
+      "path": "models/feed_nutrition/feed_ndf_xgboost.joblib",
+      "target": "NDF"
+    },
+    "feed_adf": {
+      "status": "production",
+      "framework": "xgboost",
+      "task": "regression",
+      "path": "models/feed_nutrition/feed_adf_xgboost.joblib",
+      "target": "ADF"
+    },
+    "feed_adl": {
+      "status": "production",
+      "framework": "xgboost",
+      "task": "regression",
+      "path": "models/feed_nutrition/feed_adl_xgboost.joblib",
+      "target": "ADL"
+    },
+    "feed_starch": {
+      "status": "production",
+      "framework": "xgboost",
+      "task": "regression",
+      "path": "models/feed_nutrition/feed_starch_xgboost.joblib",
+      "target": "Starch"
+    },
+    "milk_quality_fat": {
+      "status": "production",
+      "framework": "xgboost",
+      "task": "nir_regression",
+      "path": "models/milk_quality_nir_corrected/milk_quality_fat_xgboost.joblib",
+      "target": "Fat",
+      "r2": 0.8792419923775538
+    },
+    "milk_quality_protein": {
+      "status": "experimental",
+      "framework": "xgboost",
+      "task": "nir_regression",
+      "path": "models/milk_quality_nir_corrected/milk_quality_prot_xgboost.joblib",
+      "target": "Protein",
+      "r2": 0.43045642247694915
+    },
+    "mycotoxin_don": {
+      "status": "experimental",
+      "framework": "xgboost",
+      "task": "mycotoxin_regression",
+      "path": "models/mycotoxin/mycotoxin_don_xgboost.joblib",
+      "target": "DON_ppm",
+      "r2": 0.4371960886119116
+    }
+  }
+}

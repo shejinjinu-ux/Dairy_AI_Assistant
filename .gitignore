@@ -1,0 +1,48 @@
+# ==============================================================================
+# Dairy AI Assistant - Git Ignore Configuration
+# ==============================================================================
+
+# Environment Variables and Credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.secret
+
+# Python Virtual Environments & Packages
+.venv/
+.pytorch_venv/
+venv/
+ENV/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE & Operating System Artifacts
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Logs & Scratch Directories
+*.log
+scratch/
+
+# Raw Datasets & Large Training Archives
+# (Note: models/, data/processed/, and data/reports/ remain tracked)
+datasets/
+data/raw/global_cattle_milk_yield_prediction_dataset.csv
+*.archive
+*.tar
+*.tar.gz
+*.zip
+
+# Generated Training Caches and Path Indexes
+training/dataset_paths.json
+training/results/cattle_disease_split.json

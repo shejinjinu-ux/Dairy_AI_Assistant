@@ -1,0 +1,58 @@
+{
+  "dataset": "datasets\\extracted\\silage\\datasilage.xlsx",
+  "sheet": "elab.all",
+  "features": [
+    "dm.f",
+    "ash.f",
+    "cp.f",
+    "ee.f",
+    "ndf.f",
+    "adf.f",
+    "lignin.f",
+    "wsc.f",
+    "starch.f",
+    "dm.s",
+    "ash.s",
+    "cp.s",
+    "ee.s",
+    "ndf.s",
+    "adf.s",
+    "lignin.s",
+    "starch.s",
+    "wsc.s",
+    "pH",
+    "ammonia.s",
+    "glucose.s",
+    "fructose.s",
+    "mannithol.s",
+    "ethanol.s",
+    "lactic.ac.s",
+    "acetic.ac.s",
+    "propionic.ac.s",
+    "butyric.ac.s",
+    "dm.loss",
+    "dm.ret",
+    "porosity",
+    "density.1"
+  ],
+  "classification_target": "fao.class",
+  "classification_classes": [
+    "ea",
+    "la"
+  ],
+  "classification_rows": 1425,
+  "regression_target": "fqi",
+  "regression_rows": 1486,
+  "classification_metrics": {
+    "accuracy": 0.9719298245614035,
+    "precision_macro": 0.9766176470588235,
+    "recall_macro": 0.9589611419508327,
+    "f1_macro": 0.9671204430087679
+  },
+  "regression_metrics": {
+    "mae": 1.232210602643276,
+    "rmse": 1.747281787958621,
+    "r2": 0.9719343642703555
+  },
+  "random_state": 42
+}

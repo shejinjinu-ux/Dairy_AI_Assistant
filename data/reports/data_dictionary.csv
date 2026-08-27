@@ -1,0 +1,54 @@
+dataset,variable,category,dtype,unit,description,example
+NDDB_RBP_Field_Trials,animal_id,Animal,string,dimensionless,Unique animal identifier in field trial,NDDB_RBP_00001
+NDDB_RBP_Field_Trials,state,Animal,string,state,Indian state where field trial was conducted,Gujarat
+NDDB_RBP_Field_Trials,species,Animal,string,categorical,Species of bovine (Cattle or Buffalo),Cattle
+NDDB_RBP_Field_Trials,breed,Animal,string,breed_name,"Breed name (Gir, Sahiwal, Murrah, HF Cross, etc.)",Gir
+NDDB_RBP_Field_Trials,age_months,Animal,integer,months,Age of the animal in months,48
+NDDB_RBP_Field_Trials,body_weight_kg,Animal,float,kg,Live body weight in kilograms,420.5
+NDDB_RBP_Field_Trials,lactation_stage,Animal,string,stage,"Lactation stage (Early: 0-90d, Mid: 91-200d, Late: >200d)",Mid
+NDDB_RBP_Field_Trials,days_in_milk,Animal,integer,days,Days in milk (DIM) since last calving,125
+NDDB_RBP_Field_Trials,pregnancy_status,Animal,binary,0/1,"Pregnancy status (1=Pregnant, 0=Non-pregnant)",1
+NDDB_RBP_Field_Trials,basal_milk_yield_kg,Animal,float,kg/day,Daily milk yield before ration balancing,11.5
+NDDB_RBP_Field_Trials,basal_milk_fat_pct,Animal,float,%,Milk fat percentage before ration balancing,4.5
+NDDB_RBP_Field_Trials,basal_dry_fodder_kg,Feeding,float,kg/day,Basal dry fodder (straw/stover) offered per day,7.0
+NDDB_RBP_Field_Trials,basal_green_fodder_kg,Feeding,float,kg/day,Basal green fodder offered per day,15.0
+NDDB_RBP_Field_Trials,basal_concentrate_kg,Feeding,float,kg/day,Basal concentrate/cake offered per day,4.0
+NDDB_RBP_Field_Trials,basal_mineral_mixture_g,Feeding,float,g/day,Basal mineral mixture offered per day,0.0
+NDDB_RBP_Field_Trials,basal_total_dmi_kg,Feeding,float,kg DM/day,Total dry matter intake before ration balancing,12.9
+NDDB_RBP_Field_Trials,basal_feed_cost_inr,Feeding,float,INR/day,Daily feed cost before ration balancing,189.5
+NDDB_RBP_Field_Trials,rec_dry_fodder_kg,Ration/Target,float,kg/day,Recommended balanced dry fodder quantity,5.5
+NDDB_RBP_Field_Trials,rec_green_fodder_kg,Ration/Target,float,kg/day,Recommended balanced green fodder quantity,20.0
+NDDB_RBP_Field_Trials,rec_silage_kg,Ration/Target,float,kg/day,Recommended balanced silage quantity if available,0.0
+NDDB_RBP_Field_Trials,rec_concentrate_kg,Ration/Target,float,kg/day,Recommended balanced concentrate/compound feed quantity,5.8
+NDDB_RBP_Field_Trials,rec_mineral_mixture_g,Ration/Target,float,g/day,Recommended area specific mineral mixture (ASMM),50.0
+NDDB_RBP_Field_Trials,rec_total_dmi_kg,Ration/Target,float,kg DM/day,Recommended total dry matter intake,14.17
+NDDB_RBP_Field_Trials,rec_feed_cost_inr,Ration/Target,float,INR/day,Daily feed cost under balanced ration,178.2
+NDDB_RBP_Field_Trials,daily_cost_saving_inr,Ration/Target,float,INR/day,Net feed cost reduction per animal per day,11.3
+NDDB_RBP_Field_Trials,post_balancing_milk_yield_kg,Ration/Target,float,kg/day,Resulting milk yield post ration balancing,12.8
+NDDB_RBP_Field_Trials,post_balancing_milk_fat_pct,Ration/Target,float,%,Resulting milk fat % post ration balancing,4.7
+NDDB_RBP_Field_Trials,daily_net_economic_gain_inr,Ration/Target,float,INR/day,Total daily net farmer profit gain,68.5
+ICAR_NIANP_Feed_Composition,feed_id,Nutrient,string,identifier,Unique feed code in ICAR-NIANP database,IN_GF_001
+ICAR_NIANP_Feed_Composition,feed_name,Nutrient,string,name,Common & botanical Indian feed name,Maize Fodder (Green)
+ICAR_NIANP_Feed_Composition,feed_category,Nutrient,string,class,"Broad feed category (Roughage, Concentrate, Byproduct)",Green Roughage
+ICAR_NIANP_Feed_Composition,dry_matter_percent,Nutrient,float,% fresh,Dry matter percentage of feedstuff,22.0
+ICAR_NIANP_Feed_Composition,crude_protein_dm_pct,Nutrient,float,% DM,Crude protein on dry matter basis (N x 6.25),8.5
+ICAR_NIANP_Feed_Composition,crude_fiber_dm_pct,Nutrient,float,% DM,Crude fibre on dry matter basis,28.0
+ICAR_NIANP_Feed_Composition,ether_extract_dm_pct,Nutrient,float,% DM,Ether extract / crude fat on dry matter basis,2.1
+ICAR_NIANP_Feed_Composition,tdn_dm_pct,Nutrient,float,% DM,Total digestible nutrients on dry matter basis,58.0
+ICAR_NIANP_Feed_Composition,me_mj_per_kg_dm,Nutrient,float,MJ/kg DM,Metabolizable energy in megajoules per kg DM,8.8
+ICAR_NIANP_Feed_Composition,ndf_dm_pct,Nutrient,float,% DM,Neutral detergent fibre on dry matter basis,56.0
+ICAR_NIANP_Feed_Composition,adf_dm_pct,Nutrient,float,% DM,Acid detergent fibre on dry matter basis,32.0
+ICAR_NIANP_Feed_Composition,calcium_g_per_kg,Nutrient,float,g/kg DM,Calcium content in grams per kg DM,4.5
+ICAR_NIANP_Feed_Composition,phosphorus_g_per_kg,Nutrient,float,g/kg DM,Phosphorus content in grams per kg DM,2.2
+ICAR_NIANP_Feed_Composition,total_ash_dm_pct,Nutrient,float,% DM,Total mineral ash on dry matter basis,8.5
+ICAR_Nutrient_Requirements,species,Animal,string,species,Target animal species (Cattle or Buffalo),Cattle
+ICAR_Nutrient_Requirements,breed_type,Animal,string,type,"Breed category (Indigenous Zebu, Crossbred, Buffalo)",Indigenous_Zebu
+ICAR_Nutrient_Requirements,body_weight_kg,Animal,float,kg,Animal liveweight in kg,400.0
+ICAR_Nutrient_Requirements,daily_milk_yield_kg,Animal,float,kg/day,Daily milk production in kg,10.0
+ICAR_Nutrient_Requirements,milk_fat_percent,Animal,float,%,Milk fat percentage,4.5
+ICAR_Nutrient_Requirements,req_dmi_kg_per_day,Ration/Target,float,kg/day,Standard Dry Matter requirement (Maintenance + Lactation),12.1
+ICAR_Nutrient_Requirements,req_tdn_kg_per_day,Ration/Target,float,kg/day,Standard TDN requirement per day,6.26
+ICAR_Nutrient_Requirements,req_me_mj_per_day,Ration/Target,float,MJ/day,Standard Metabolizable Energy requirement per day,94.5
+ICAR_Nutrient_Requirements,req_cp_g_per_day,Ration/Target,float,g/day,Standard Crude Protein requirement per day,1226.7
+ICAR_Nutrient_Requirements,req_calcium_g_per_day,Ration/Target,float,g/day,Standard Calcium requirement per day,50.0
+ICAR_Nutrient_Requirements,req_phosphorus_g_per_day,Ration/Target,float,g/day,Standard Phosphorus requirement per day,34.0

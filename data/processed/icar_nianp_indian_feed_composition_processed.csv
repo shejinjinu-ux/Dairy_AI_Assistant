@@ -1,0 +1,39 @@
+feed_id,feed_name,feed_category,feed_subcategory,dry_matter_percent,crude_protein_dm_pct,crude_fiber_dm_pct,ether_extract_dm_pct,tdn_dm_pct,me_mj_per_kg_dm,ndf_dm_pct,adf_dm_pct,calcium_g_per_kg,phosphorus_g_per_kg,total_ash_dm_pct,season,indian_region
+IN_GF_001,Maize Fodder (Green),Green Roughage,Non-Legume,22.0,8.5,28.0,2.1,58.0,8.8,56.0,32.0,4.5,2.2,8.5,Kharif/Summer,All India
+IN_GF_002,Sorghum / Jowar Fodder (Green),Green Roughage,Non-Legume,24.0,7.2,30.5,1.8,54.0,8.2,62.0,36.0,4.0,2.0,9.0,Kharif,Central/Western
+IN_GF_003,Bajra / Pearl Millet Fodder (Green),Green Roughage,Non-Legume,20.0,8.0,29.0,1.9,55.0,8.3,58.0,34.0,4.2,2.1,9.2,Kharif,North-West/Central
+IN_GF_004,Hybrid Napier (CO-3 / CO-4 / CO-5),Green Roughage,Non-Legume Perennial,18.5,9.2,27.5,2.2,56.5,8.5,57.0,33.0,5.0,2.5,10.5,Perennial,South/West/East
+IN_GF_005,Guinea Grass (Panicum maximum),Green Roughage,Non-Legume Perennial,20.0,8.8,31.0,1.7,52.0,7.9,64.0,38.0,4.8,2.2,11.0,Perennial,South/East
+IN_GF_006,Para Grass (Brachiaria mutica),Green Roughage,Non-Legume Wetland,17.0,7.8,30.0,1.6,51.0,7.7,65.0,37.0,4.1,2.0,11.5,Perennial,Coastal/Wetland
+IN_GF_007,Oat Fodder (Avena sativa),Green Roughage,Non-Legume Rabi,19.0,10.5,25.0,2.5,60.0,9.1,52.0,30.0,4.6,2.8,9.0,Rabi/Winter,North/Central
+IN_GL_008,Berseem / Egyptian Clover (Green),Green Roughage,Legume Rabi,15.0,18.5,21.0,2.8,62.0,9.4,42.0,26.0,14.5,3.2,12.0,Rabi/Winter,North/Central
+IN_GL_009,Lucerne / Alfalfa (Medicago sativa),Green Roughage,Legume Perennial,20.0,20.0,22.5,2.6,60.0,9.1,44.0,28.0,15.0,3.0,10.8,Year-Round,Western/South/North
+IN_GL_010,Cowpea Fodder (Vigna unguiculata),Green Roughage,Legume Kharif,16.5,16.5,23.0,2.4,58.5,8.9,46.0,30.0,13.0,3.1,11.2,Kharif,All India
+IN_GL_011,Hedge Lucerne / Desmanthus,Green Roughage,Legume Perennial,23.0,19.0,24.0,2.5,57.0,8.6,48.0,31.0,16.0,2.8,9.8,Perennial,South/Central
+IN_GL_012,Azolla pinnata (Fresh Biomass),Green Supplement,Aquatic Fern,7.5,24.5,14.0,3.5,65.0,9.8,38.0,22.0,18.0,5.5,16.0,Year-Round,All India
+IN_DR_013,Paddy Straw (Oryza sativa),Dry Roughage,Cereal Straw,90.0,3.8,36.0,1.2,42.0,6.4,72.0,48.0,3.5,1.2,16.5,Annual,South/East/North
+IN_DR_014,Wheat Straw (Triticum aestivum),Dry Roughage,Cereal Straw,91.0,3.5,37.5,1.0,40.0,6.1,74.0,50.0,3.0,1.0,10.5,Annual,North/Central
+IN_DR_015,Sorghum Stover / Kadbi (Dry),Dry Roughage,Millet Stover,89.0,4.5,34.0,1.4,46.0,7.0,68.0,44.0,4.0,1.4,8.8,Annual,Central/Western/South
+IN_DR_016,Maize Stover (Dry),Dry Roughage,Cereal Stover,88.5,5.0,33.0,1.5,48.0,7.3,66.0,42.0,4.2,1.5,8.0,Annual,All India
+IN_DR_017,Sugarcane Tops (Dry),Dry Roughage,Agro-Residue,86.0,4.2,32.5,1.6,47.0,7.1,65.0,40.0,4.5,1.6,9.5,Harvest,Sugar Belt (UP/MH/TN)
+IN_SI_018,Maize Silage (Fermented),Silage,Fermented Cereal,32.5,8.8,24.0,2.8,64.0,9.7,48.0,28.0,3.8,2.4,6.8,Year-Round,All India
+IN_SI_019,Sorghum Silage (Fermented),Silage,Fermented Millet,30.0,7.5,26.0,2.2,58.0,8.8,54.0,32.0,4.0,2.1,7.5,Year-Round,Central/Western
+IN_EC_020,Maize Grain (Crushed),Concentrate,Energy Grain,88.0,9.5,2.2,3.8,82.0,12.5,12.0,3.5,0.3,3.0,1.8,Annual,All India
+IN_EC_021,Barley Grain (Hordeum vulgare),Concentrate,Energy Grain,89.0,11.0,5.5,2.0,76.0,11.5,18.0,6.0,0.6,3.8,2.8,Annual,North India
+IN_EC_022,Wheat Grain (Cracked),Concentrate,Energy Grain,88.5,12.0,2.8,1.8,80.0,12.1,14.0,4.0,0.5,3.5,2.0,Annual,North/Central
+IN_PC_023,Cottonseed Cake (Decorticated),Concentrate,Protein Cake,90.0,38.0,12.0,7.5,74.0,11.2,30.0,18.0,2.5,11.0,6.5,Annual,Gujarat/MH/Telangana/Punjab
+IN_PC_024,Cottonseed Cake (Undecorticated),Concentrate,Protein Cake,90.0,22.0,24.0,6.0,62.0,9.4,48.0,32.0,2.0,8.5,5.8,Annual,Western/Central
+IN_PC_025,Mustard / Rapeseed Cake (Expeller),Concentrate,Protein Cake,91.0,36.0,9.5,8.0,72.0,10.9,26.0,16.0,7.0,10.5,7.8,Annual,North/East/Central
+IN_PC_026,Groundnut / Peanut Cake (Expeller),Concentrate,Protein Cake,92.0,44.0,6.5,8.5,78.0,11.8,20.0,11.0,2.8,6.5,6.0,Annual,Gujarat/AP/TN/Karnataka
+IN_PC_027,Soybean Meal (Solvent Extracted),Concentrate,Protein Meal,90.0,48.0,5.5,1.5,78.0,11.8,15.0,9.0,3.2,6.8,6.5,Annual,Madhya Pradesh/MH
+IN_PC_028,Sesame / Til Cake,Concentrate,Protein Cake,91.5,40.0,6.0,9.0,76.0,11.5,18.0,10.0,19.0,12.0,11.0,Annual,South/East/Central
+IN_BP_029,Wheat Bran (Chokar),Byproduct,Milling Byproduct,88.0,15.0,10.5,3.5,65.0,9.8,42.0,14.0,1.2,11.5,5.5,Annual,All India
+IN_BP_030,De-Oiled Rice Bran (DORB),Byproduct,Milling Byproduct,90.0,14.5,13.0,1.2,55.0,8.3,45.0,22.0,1.5,15.0,14.0,Annual,East/South/North
+IN_BP_031,Rice Polish / Raw Rice Bran,Byproduct,Milling Byproduct,89.0,13.0,8.5,14.0,72.0,10.9,32.0,15.0,1.0,14.0,9.0,Annual,East/South
+IN_BP_032,Gram / Chickpea Chuni,Byproduct,Pulse Byproduct,89.0,17.5,16.0,2.8,68.0,10.3,38.0,24.0,3.5,4.0,6.0,Annual,Central/North
+IN_BP_033,Tur / Arhar Pulse Chuni,Byproduct,Pulse Byproduct,90.0,16.0,18.0,2.5,64.0,9.7,42.0,28.0,4.0,3.5,6.8,Annual,MH/Karnataka/MP
+IN_BP_034,Sugarcane Molasses,Byproduct,Liquid Sugar Byproduct,75.0,3.5,0.0,0.2,70.0,10.6,0.0,0.0,8.0,0.8,11.5,Sugar Season,UP/MH/TN/Karnataka
+IN_CF_035,Compound Cattle Feed (BIS Type-II Standard),Compound Feed,Commercial Pellet/Mash,90.0,20.0,10.0,3.0,70.0,10.6,30.0,16.0,8.0,5.0,8.0,Year-Round,All India
+IN_CF_036,Compound Cattle Feed (BIS Type-I High Yield),Compound Feed,Commercial Pellet/Mash,90.0,22.0,8.0,4.0,72.0,10.9,26.0,14.0,10.0,6.0,7.5,Year-Round,All India
+IN_CF_037,Area Specific Mineral Mixture (ASMM),Mineral Supplement,Micro/Macro Minerals,98.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,200.0,120.0,85.0,Year-Round,All India (NDDB/ICAR Formulations)
+IN_CF_038,Bypass Fat / Rumen Protected Fat,Energy Supplement,Fractionated Palm Fatty Acids,99.0,0.0,0.0,84.0,160.0,24.2,0.0,0.0,90.0,0.0,12.0,Year-Round,All India

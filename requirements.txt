@@ -1,0 +1,34 @@
+# ==============================================================================
+# Dairy AI Assistant - Production Requirements
+# Compatible with Linux / Docker / Cloud Run / Render / AWS / Local
+# ==============================================================================
+
+# Core Web Framework & ASGI Server
+fastapi>=0.110.0,<0.120.0
+uvicorn[standard]>=0.28.0,<0.35.0
+pydantic>=2.6.0,<3.0.0
+pydantic-settings>=2.2.0,<3.0.0
+python-multipart>=0.0.9
+python-dotenv>=1.0.0
+httpx>=0.27.0,<0.29.0
+
+# Scientific Computing & Data Analysis
+numpy>=1.26.0,<3.0.0
+pandas>=2.1.0,<4.0.0
+scipy>=1.12.0,<2.0.0
+scikit-learn>=1.4.0,<2.0.0
+joblib>=1.3.0,<2.0.0
+openpyxl>=3.1.0,<4.0.0
+
+# Machine Learning & Deep Learning (CPU/CUDA compatible)
+torch>=2.2.0,<3.0.0
+torchvision>=0.17.0,<1.0.0
+timm>=0.9.16,<2.0.0
+xgboost>=2.0.0,<4.0.0
+
+# Image & File Processing
+pillow>=10.2.0,<13.0.0
+requests>=2.31.0,<3.0.0
+
+# Database & Testing
+pytest>=8.0.0

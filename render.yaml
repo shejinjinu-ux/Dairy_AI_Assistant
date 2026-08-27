@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: dairy-ai-assistant-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: standard
+    region: oregon
+    healthCheckPath: /health
+    envVars:
+      - key: FORCE_CPU
+        value: "true"
+      - key: ENABLE_EXPERIMENTAL_MODELS
+        value: "false"
+      - key: CHAT_DEFAULT_LANGUAGE
+        value: "en"
+      - key: CORS_ORIGINS
+        value: "https://dairy-nova-ai-gilt.vercel.app,https://dairy-nova-ai.vercel.app,http://localhost:5173,http://localhost:3000,capacitor://localhost,*"
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: AI_PROVIDER
+        value: "local"

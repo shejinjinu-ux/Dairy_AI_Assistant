@@ -1,0 +1,67 @@
+{
+  "status": "obsolete_incorrect_features",
+  "notice": "DEPRECATED: These models were trained using 1032 features including 9 non-spectral metadata columns. Do not use for production. Superseded by models/milk_quality_nir_corrected/.",
+  "dataset": "datasets\\extracted\\milk_quality\\milk_nir_composition.csv",
+  "samples": 1224,
+  "spectral_features": 1032,
+  "targets": [
+    "Fat",
+    "Prot",
+    "Lact",
+    "SCC",
+    "Urea"
+  ],
+  "results": {
+    "Fat": {
+      "selected_model": "xgboost",
+      "mae": 0.17637894562312534,
+      "rmse": 0.29015841910388723,
+      "r2": 0.8722547880076489,
+      "test_rows": 245,
+      "spectral_features": 1032,
+      "pca_components": 95,
+      "model_path": "models\\milk_quality_nir\\milk_quality_fat_xgboost.joblib"
+    },
+    "Prot": {
+      "selected_model": "xgboost",
+      "mae": 0.17764563463172134,
+      "rmse": 0.22468877086058986,
+      "r2": 0.5561768598455819,
+      "test_rows": 245,
+      "spectral_features": 1032,
+      "pca_components": 95,
+      "model_path": "models\\milk_quality_nir\\milk_quality_prot_xgboost.joblib"
+    },
+    "Lact": {
+      "selected_model": "random_forest",
+      "mae": 0.10661768707482988,
+      "rmse": 0.14493624980637715,
+      "r2": 0.25578607060616776,
+      "test_rows": 245,
+      "spectral_features": 1032,
+      "pca_components": 95,
+      "model_path": "models\\milk_quality_nir\\milk_quality_lact_random_forest.joblib"
+    },
+    "SCC": {
+      "selected_model": "xgboost",
+      "mae": 178.4045867919922,
+      "rmse": 325.5530870687606,
+      "r2": -0.2171725034713745,
+      "test_rows": 245,
+      "spectral_features": 1032,
+      "pca_components": 95,
+      "model_path": "models\\milk_quality_nir\\milk_quality_scc_xgboost.joblib"
+    },
+    "Urea": {
+      "selected_model": "random_forest",
+      "mae": 3.58821768707483,
+      "rmse": 4.435768959098682,
+      "r2": 0.24022327995628978,
+      "test_rows": 245,
+      "spectral_features": 1032,
+      "pca_components": 95,
+      "model_path": "models\\milk_quality_nir\\milk_quality_urea_random_forest.joblib"
+    }
+  },
+  "random_state": 42
+}

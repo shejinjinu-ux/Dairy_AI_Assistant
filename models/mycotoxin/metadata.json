@@ -1,0 +1,66 @@
+{
+  "dataset": "datasets\\extracted\\mycotoxin\\corn_mycotoxin_feed.xlsx",
+  "samples": 328,
+  "features": [
+    "Protein",
+    "Fat",
+    "Moisture",
+    "Fiber",
+    "Starch",
+    "AshAI",
+    "L*(D65) SCI",
+    "a*(D65) SCI",
+    "b*(D65) SCI",
+    "harvest year",
+    "sample type",
+    "Sample Location"
+  ],
+  "targets": {
+    "AFB1": "AFB1 (ppm)",
+    "FUM": "FUM  (ppm) LCMS",
+    "ZEA": "ZEA (ppm)",
+    "DON": "DON (ppm) LCMS"
+  },
+  "results": {
+    "AFB1": {
+      "target": "AFB1 (ppm)",
+      "valid_rows": 328,
+      "mae_ppm": 0.023937112978848755,
+      "rmse_ppm": 0.06048674947949405,
+      "r2": -0.25444271199263113,
+      "model_path": "models\\mycotoxin\\mycotoxin_afb1_xgboost.joblib"
+    },
+    "FUM": {
+      "target": "FUM  (ppm) LCMS",
+      "valid_rows": 328,
+      "mae_ppm": 3.5526623021185473,
+      "rmse_ppm": 7.027729013597179,
+      "r2": 0.07308330414478292,
+      "model_path": "models\\mycotoxin\\mycotoxin_fum_xgboost.joblib"
+    },
+    "ZEA": {
+      "target": "ZEA (ppm)",
+      "valid_rows": 328,
+      "mae_ppm": 0.21675730716865746,
+      "rmse_ppm": 0.3680950694189556,
+      "r2": 0.19755670741470566,
+      "model_path": "models\\mycotoxin\\mycotoxin_zea_xgboost.joblib"
+    },
+    "DON": {
+      "target": "DON (ppm) LCMS",
+      "valid_rows": 328,
+      "mae_ppm": 0.4736015029182094,
+      "rmse_ppm": 0.9591320199411181,
+      "r2": 0.4371960886119116,
+      "model_path": "models\\mycotoxin\\mycotoxin_don_xgboost.joblib"
+    }
+  },
+  "target_transform": "log1p",
+  "random_state": 42,
+  "limitations": [
+    "Dataset contains corn/maize feed samples.",
+    "AFB1 and ZEA category labels are incomplete.",
+    "Regression models use measured toxin concentrations.",
+    "This is a screening prototype, not laboratory replacement."
+  ]
+}
