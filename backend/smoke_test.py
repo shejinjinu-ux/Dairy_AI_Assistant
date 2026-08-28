@@ -80,9 +80,44 @@ def run_smoke_tests():
     res = client.post("/api/v1/predict/disease", files={"file": ("cow.jpg", img300, "image/jpeg")})
     data = res.json()
     check(
-        "POST /api/v1/predict/disease",
+        "POST /api/v1/predict/disease (Synthetic)",
         res.status_code == 200 and "predicted_class" in data,
         f"(Prediction: {data.get('predicted_class')}, Confidence: {data.get('confidence_percentage')}%)"
+    )
+
+    # 3b. Real Dataset Image Diagnosis
+    real_fmd_path = ROOT / "datasets" / "raw" / "cattle_disease" / "FMD" / "FMD1.jpg"
+    if real_fmd_path.exists():
+        with open(real_fmd_path, "rb") as f:
+            real_bytes = f.read()
+        res_real = client.post("/api/v1/predict/disease", files={"file": ("FMD1.jpg", real_bytes, "image/jpeg")})
+        real_data = res_real.json()
+        check(
+            "POST /api/v1/predict/disease (Real FMD Dataset Image)",
+            res_real.status_code == 200 and real_data.get("predicted_class") == "FMD" and real_data.get("is_disease_detected") is True,
+            f"(Condition: {real_data.get('disease_name_full')}, Conf: {real_data.get('confidence_percentage')}%)"
+        )
+
+    # 3c. Invalid & Edge Case Handling (Honest Structured Errors)
+    res_invalid = client.post("/api/v1/predict/disease", files={"file": ("test.txt", b"not an image", "text/plain")})
+    check(
+        "POST /api/v1/predict/disease (Reject Invalid File)",
+        res_invalid.status_code == 400 and res_invalid.json().get("error_type") == "ImageProcessingError",
+        f"(Status: {res_invalid.status_code}, Error: {res_invalid.json().get('error_type')})"
+    )
+
+    res_empty = client.post("/api/v1/predict/disease", files={"file": ("empty.jpg", b"", "image/jpeg")})
+    check(
+        "POST /api/v1/predict/disease (Reject Empty File)",
+        res_empty.status_code == 400 and res_empty.json().get("error_type") == "ImageProcessingError",
+        f"(Status: {res_empty.status_code}, Error: {res_empty.json().get('error_type')})"
+    )
+
+    res_missing = client.post("/api/v1/predict/disease", data={})
+    check(
+        "POST /api/v1/predict/disease (Reject Missing File)",
+        res_missing.status_code == 422 and res_missing.json().get("error_type") == "RequestValidationError",
+        f"(Status: {res_missing.status_code}, Error: {res_missing.json().get('error_type')})"
     )
 
     # 4. Bovine Breed Classification & Confidence Thresholding
@@ -252,6 +287,62 @@ def run_smoke_tests():
         "POST /api/v1/sensor-lab/mycotoxin-don (Disabled check)",
         res_myco.status_code == 403,
         f"(Expected 403 when disabled -> Received HTTP {res_myco.status_code})"
+    )
+
+    # 11. Multilingual Dairy AI Chat Assistant & Session Persistence
+    print("\n11. Testing Multilingual Dairy AI Chat Assistant & Persistence...")
+    chat_turn1_payload = {
+        "message": "What is the recommended green fodder for lactating crossbred cows?",
+        "language": "en",
+        "session_id": "smoke_chat_session_001"
+    }
+    res_chat1 = client.post("/api/v1/chat", json=chat_turn1_payload)
+    data_chat1 = res_chat1.json()
+    check(
+        "POST /api/v1/chat (Turn 1 - English AI Advisory)",
+        res_chat1.status_code == 200
+        and data_chat1.get("success") is True
+        and len(data_chat1.get("reply", "")) > 0
+        and data_chat1.get("session_id") == "smoke_chat_session_001",
+        f"(Intent: {data_chat1.get('intent')}, Reply Preview: '{data_chat1.get('reply', '')[:50]}...')"
+    )
+
+    # 11b. Multi-turn Follow-up with Context Continuity
+    chat_turn2_payload = {
+        "message": "How much dry fodder should I add to that?",
+        "session_id": "smoke_chat_session_001"
+    }
+    res_chat2 = client.post("/api/v1/chat", json=chat_turn2_payload)
+    data_chat2 = res_chat2.json()
+    check(
+        "POST /api/v1/chat (Turn 2 - Multi-turn Session Memory)",
+        res_chat2.status_code == 200
+        and data_chat2.get("success") is True
+        and len(data_chat2.get("reply", "")) > 0
+        and data_chat2.get("session_id") == "smoke_chat_session_001",
+        f"(Intent: {data_chat2.get('intent')}, Module: {data_chat2.get('module')})"
+    )
+
+    # 11c. Indic Language Verification (Tamil)
+    chat_ta_payload = {
+        "message": "என் மாட்டுக்கு என்ன தீவனம் கொடுக்க வேண்டும்?"
+    }
+    res_chat_ta = client.post("/api/v1/chat", json=chat_ta_payload)
+    data_chat_ta = res_chat_ta.json()
+    check(
+        "POST /api/v1/chat (Tamil Auto-detection & Response)",
+        res_chat_ta.status_code == 200
+        and data_chat_ta.get("detected_language") == "ta"
+        and len(data_chat_ta.get("reply", "")) > 0,
+        f"(Detected: {data_chat_ta.get('detected_language')}, Lang: {data_chat_ta.get('language')})"
+    )
+
+    # 11d. Empty Message Validation
+    res_empty_chat = client.post("/api/v1/chat", json={"message": "   "})
+    check(
+        "POST /api/v1/chat (Reject Empty Message)",
+        res_empty_chat.status_code == 422,
+        f"(Expected 422 -> Received HTTP {res_empty_chat.status_code})"
     )
 
     print("\n" + "=" * 80)

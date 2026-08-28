@@ -165,7 +165,7 @@ class SupabaseChatRepository(ChatRepository):
         self.supabase_url = self.base_url
         self.rest_url = f"{self.base_url}/rest/v1"
 
-        self.supabase_key = supabase_key
+        self.supabase_key = supabase_key.strip()
         self.headers = {
             "apikey": self.supabase_key,
             "Authorization": f"Bearer {self.supabase_key}",
@@ -259,7 +259,24 @@ class SupabaseChatRepository(ChatRepository):
             if res.status_code in [200, 201]:
                 return session
             elif res.status_code in [401, 403]:
-                raise SupabaseConnectionError(f"Supabase auth failed during save_session (HTTP {res.status_code}).")
+                # If RLS rejects saving user_id when using an anon/publishable key without service_role:
+                if payload.get("user_id") is not None:
+                    logger.warning(
+                        "Supabase RLS blocked saving session with user_id using the configured key. "
+                        "Retrying as anonymous session. To persist user_id, configure SUPABASE_SERVICE_ROLE_KEY."
+                    )
+                    retry_payload = {**payload, "user_id": None}
+                    retry_res = self.client.post(
+                        f"{self.rest_url}/chat_sessions?on_conflict=id",
+                        headers={
+                            **self.headers,
+                            "Prefer": "resolution=merge-duplicates,return=representation"
+                        },
+                        json=retry_payload
+                    )
+                    if retry_res.status_code in [200, 201]:
+                        return session
+                raise SupabaseConnectionError(f"Supabase auth failed during save_session (HTTP {res.status_code}): {res.text}")
             else:
                 raise SupabaseQueryError(f"Failed to save session to Supabase (HTTP {res.status_code}): {res.text}")
         except (httpx.RequestError, httpx.TimeoutException) as e:
@@ -282,7 +299,7 @@ class SupabaseChatRepository(ChatRepository):
                 "language": message.language or "en",
                 "updated_at": created_iso
             }
-            self.client.post(
+            res_parent = self.client.post(
                 f"{self.rest_url}/chat_sessions?on_conflict=id",
                 headers={
                     **self.headers,
@@ -290,6 +307,8 @@ class SupabaseChatRepository(ChatRepository):
                 },
                 json=parent_session_payload
             )
+            if res_parent.status_code not in [200, 201, 204]:
+                logger.debug(f"Parent session upsert returned HTTP {res_parent.status_code}")
 
             # 2. Insert message into chat_messages
             msg_payload = {
@@ -310,7 +329,7 @@ class SupabaseChatRepository(ChatRepository):
             if res.status_code in [200, 201]:
                 return message
             elif res.status_code in [401, 403]:
-                raise SupabaseConnectionError(f"Supabase auth error in add_message (HTTP {res.status_code}).")
+                raise SupabaseConnectionError(f"Supabase auth error in add_message (HTTP {res.status_code}): {res.text}")
             else:
                 raise SupabaseQueryError(f"Failed to add message in Supabase (HTTP {res.status_code}): {res.text}")
         except (httpx.RequestError, httpx.TimeoutException) as e:
@@ -370,7 +389,7 @@ def get_chat_repository() -> ChatRepository:
                 if settings.is_supabase_configured:
                     logger.info("Initializing SupabaseChatRepository for persistent storage.")
                     _chat_repository_instance = SupabaseChatRepository(
-                        supabase_url=settings.SUPABASE_URL,
+                        supabase_url=settings.effective_supabase_url,
                         supabase_key=settings.effective_supabase_key
                     )
                 else:

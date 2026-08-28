@@ -100,17 +100,39 @@ class Settings(BaseSettings):
     SUPABASE_URL: str | None = None
     SUPABASE_KEY: str | None = None
     SUPABASE_SERVICE_ROLE_KEY: str | None = None
+    SUPABASE_SERVICE_KEY: str | None = None
+    SUPABASE_SECRET_KEY: str | None = None
     SUPABASE_ANON_KEY: str | None = None
+    SUPABASE_PUBLISHABLE_KEY: str | None = None
+    SUPABASE_PUBLIC_KEY: str | None = None
+
+    @property
+    def effective_supabase_url(self) -> str | None:
+        """Resolve clean Supabase base URL."""
+        if self.SUPABASE_URL and str(self.SUPABASE_URL).strip():
+            return str(self.SUPABASE_URL).strip()
+        return None
 
     @property
     def effective_supabase_key(self) -> str | None:
         """Resolve the effective Supabase API key with service role precedence."""
-        return self.SUPABASE_SERVICE_ROLE_KEY or self.SUPABASE_KEY or self.SUPABASE_ANON_KEY
+        for candidate in [
+            self.SUPABASE_SERVICE_ROLE_KEY,
+            self.SUPABASE_SERVICE_KEY,
+            self.SUPABASE_SECRET_KEY,
+            self.SUPABASE_KEY,
+            self.SUPABASE_ANON_KEY,
+            self.SUPABASE_PUBLISHABLE_KEY,
+            self.SUPABASE_PUBLIC_KEY
+        ]:
+            if candidate and str(candidate).strip():
+                return str(candidate).strip()
+        return None
 
     @property
     def is_supabase_configured(self) -> bool:
         """Returns True if valid Supabase URL and Key are configured."""
-        return bool(self.SUPABASE_URL and self.effective_supabase_key)
+        return bool(self.effective_supabase_url and self.effective_supabase_key)
 
     @property
     def torch_device(self) -> torch.device:

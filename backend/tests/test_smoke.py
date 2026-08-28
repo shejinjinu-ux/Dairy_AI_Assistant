@@ -145,12 +145,52 @@ def test_disease_prediction(client: TestClient):
     assert data["model_version"] == "efficientnet_b3"
 
 
+def test_disease_real_cattle_image(client: TestClient):
+    """Verify POST /api/v1/predict/disease with real dataset cattle lesion image."""
+    from pathlib import Path
+    img_path = Path("datasets/raw/cattle_disease/FMD/FMD1.jpg")
+    if img_path.exists():
+        with open(img_path, "rb") as f:
+            img_bytes = f.read()
+        res = client.post("/api/v1/predict/disease", files={"file": ("FMD1.jpg", img_bytes, "image/jpeg")})
+        assert res.status_code == 200
+        data = res.json()
+        assert data["predicted_class"] == "FMD"
+        assert data["is_disease_detected"] is True
+        assert data["disease_name_full"] == "Foot-and-Mouth Disease (Aphthovirus)"
+        assert data["confidence"] > 0.5
+
+
 def test_disease_invalid_file(client: TestClient):
     """Verify error handling on non-image upload."""
     files = {"file": ("test.txt", b"not an image", "text/plain")}
     res = client.post("/api/v1/predict/disease", files=files)
     assert res.status_code == 400
     assert res.json()["error_type"] == "ImageProcessingError"
+
+
+def test_disease_empty_image(client: TestClient):
+    """Verify error handling on empty image file."""
+    files = {"file": ("empty.jpg", b"", "image/jpeg")}
+    res = client.post("/api/v1/predict/disease", files=files)
+    assert res.status_code == 400
+    assert res.json()["error_type"] == "ImageProcessingError"
+    assert "empty" in res.json()["message"].lower()
+
+
+def test_disease_corrupt_image(client: TestClient):
+    """Verify error handling on corrupted image payload."""
+    files = {"file": ("corrupt.jpg", b"GIF89a_not_a_real_image_data_just_garbage", "image/jpeg")}
+    res = client.post("/api/v1/predict/disease", files=files)
+    assert res.status_code == 400
+    assert res.json()["error_type"] == "ImageProcessingError"
+
+
+def test_disease_missing_image(client: TestClient):
+    """Verify error handling when file field is omitted."""
+    res = client.post("/api/v1/predict/disease", data={})
+    assert res.status_code == 422
+    assert res.json()["error_type"] == "RequestValidationError"
 
 
 def test_breed_prediction_default(client: TestClient):
@@ -478,3 +518,44 @@ def test_urea_silica_screen(client: TestClient):
     data = res.json()
     assert data["lab_data_provided"] is True
     assert "Feed" in data["sample_matrix"]
+
+
+# ----------------------------------------------------------------------
+# 6. Chat Endpoint Smoke Tests
+# ----------------------------------------------------------------------
+
+def test_chat_endpoint_smoke_english(client: TestClient):
+    """Verify POST /api/v1/chat returns 200 with AI response."""
+    payload = {
+        "message": "What is the recommended feed ration for high milk yield cows?",
+        "language": "en",
+        "session_id": "test_smoke_chat_sess_001"
+    }
+    res = client.post("/api/v1/chat", json=payload)
+    assert res.status_code == 200
+    data = res.json()
+    assert data["success"] is True
+    assert len(data["reply"]) > 0
+    assert data["session_id"] == "test_smoke_chat_sess_001"
+
+
+def test_chat_endpoint_smoke_multiturn(client: TestClient):
+    """Verify multi-turn follow up retains conversation session."""
+    payload1 = {
+        "message": "My cow produces 18 litres of milk daily.",
+        "session_id": "test_smoke_chat_multiturn_002"
+    }
+    res1 = client.post("/api/v1/chat", json=payload1)
+    assert res1.status_code == 200
+
+    payload2 = {
+        "message": "What should the green and dry fodder ratio be?",
+        "session_id": "test_smoke_chat_multiturn_002"
+    }
+    res2 = client.post("/api/v1/chat", json=payload2)
+    assert res2.status_code == 200
+    data2 = res2.json()
+    assert data2["success"] is True
+    assert len(data2["reply"]) > 0
+    assert data2["session_id"] == "test_smoke_chat_multiturn_002"
+
