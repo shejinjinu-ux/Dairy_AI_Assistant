@@ -8,8 +8,10 @@ from backend.app.schemas.silage import (
     SilageInput,
     SilageQualityClassResponse,
     SilageFQIRegressionResponse,
-    SilageComprehensiveResponse
+    SilageComprehensiveResponse,
+    SilageQualityScreeningResult
 )
+from backend.app.services.silage_scoring import evaluate_silage_screening
 from backend.app.core.exceptions import ModelInferenceError
 
 
@@ -87,13 +89,30 @@ class SilageInferenceService:
 
     def predict_comprehensive(self, input_data: SilageInput) -> SilageComprehensiveResponse:
         """
-        Compute both quality class and FQI score in one consolidated call.
+        Compute quality class, FQI score, and dynamic agronomic screening result.
         """
         quality = self.predict_quality_class(input_data)
         fqi = self.predict_fqi(input_data)
+
+        # Dynamic Agronomic Screening Interpretation Layer
+        screening_dict = evaluate_silage_screening(
+            predicted_fqi=fqi.predicted_fqi,
+            predicted_class=quality.predicted_class,
+            class_confidence=quality.confidence,
+            ph=input_data.pH,
+            dm_s=input_data.dm_s,
+            cp_s=input_data.cp_s,
+            lactic_acid_pct=input_data.lactic_ac_s,
+            acetic_acid_pct=input_data.acetic_ac_s,
+            butyric_acid_pct=input_data.butyric_ac_s,
+            ammonia_n_pct=input_data.ammonia_s
+        )
+        screening_obj = SilageQualityScreeningResult(**screening_dict)
+
         return SilageComprehensiveResponse(
             quality_classification=quality,
-            fermentation_quality_index=fqi
+            fermentation_quality_index=fqi,
+            screening_result=screening_obj
         )
 
 

@@ -2,7 +2,7 @@
 Silage Quality & Fermentation Quality Index (FQI) Schemas
 """
 
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 from pydantic import BaseModel, Field, ConfigDict
 
 
@@ -67,7 +67,25 @@ class SilageFQIRegressionResponse(BaseModel):
     model_r2_score: float = Field(default=0.9719, description="Validation R2 score")
 
 
+class SilageQualityScreeningResult(BaseModel):
+    """Silage screening interpretation combining FQI, FAO class, pH, moisture, and acid profiles."""
+    screening_status: str = Field(..., description="Dynamic quality screening status: GOOD | CAUTION | UNSAFE")
+    composite_quality_score: float = Field(..., description="Dynamic composite score (0 - 100)")
+    fermentation_tier: str = Field(..., description="Descriptive fermentation quality classification")
+    why: List[str] = Field(..., description="Scientific explanation and risk indicators")
+    recommended_action: List[str] = Field(..., description="Recommended silo management and feeding actions")
+    screening_type: str = Field(default="silage_quality_screening", description="Type of screening performed")
+    disclaimer: str = Field(
+        default="Silage quality screening result based on proximal fermentation indicators. Laboratory confirmation required for comprehensive microbiological analysis.",
+        description="Screening scope disclaimer"
+    )
+
+
 class SilageComprehensiveResponse(BaseModel):
     """Combined silage assessment output."""
     quality_classification: SilageQualityClassResponse
     fermentation_quality_index: SilageFQIRegressionResponse
+    screening_result: Optional[SilageQualityScreeningResult] = Field(
+        default=None,
+        description="Comprehensive dynamic quality screening interpretation"
+    )

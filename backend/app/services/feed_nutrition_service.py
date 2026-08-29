@@ -10,6 +10,10 @@ from backend.app.schemas.feed_nutrition import (
     NutritionalTargetPrediction,
     FeedNutritionMultiTargetResponse
 )
+from backend.app.services.feed_scoring import (
+    g_per_kg_to_percentage,
+    calculate_feed_quality_score
+)
 from backend.app.core.exceptions import ModelInferenceError, ModelNotFoundError
 
 
@@ -60,7 +64,7 @@ TARGET_METADATA = {
 
 
 class FeedNutritionInferenceService:
-    """Service handling multi-target feed nutrition regression."""
+    """Service handling multi-target feed nutrition regression with dynamic scoring."""
 
     def _prepare_dataframe(self, input_data: FeedNutritionInput) -> pd.DataFrame:
         """Convert input model into DataFrame matching pipeline column names."""
@@ -68,7 +72,7 @@ class FeedNutritionInferenceService:
         return pd.DataFrame([raw_dict])
 
     def predict_target(self, target_name: str, input_data: FeedNutritionInput) -> NutritionalTargetPrediction:
-        """Predict a single nutritional target."""
+        """Predict a single nutritional target with unit conversion to percentage."""
         clean_target = target_name.lower().replace("-", "_").replace(" ", "_")
         meta = TARGET_METADATA.get(clean_target)
         if not meta:
@@ -81,10 +85,12 @@ class FeedNutritionInferenceService:
             df = self._prepare_dataframe(input_data)
             predicted_val = float(pipeline.predict(df)[0])
             predicted_val = max(0.0, predicted_val)
+            pct_val = g_per_kg_to_percentage(predicted_val)
 
             return NutritionalTargetPrediction(
                 target_name=meta["display_name"],
                 predicted_value=round(predicted_val, 2),
+                percentage_value=pct_val,
                 unit=meta["unit"],
                 model_r2=meta["r2"]
             )
@@ -92,15 +98,39 @@ class FeedNutritionInferenceService:
             raise ModelInferenceError(model_key, str(e))
 
     def predict_all(self, input_data: FeedNutritionInput) -> FeedNutritionMultiTargetResponse:
-        """Predict all 7 nutritional fractions simultaneously."""
+        """Predict all 7 nutritional fractions simultaneously and compute dynamic quality score."""
         predictions: Dict[str, NutritionalTargetPrediction] = {}
         for target_key in TARGET_METADATA.keys():
             predictions[target_key] = self.predict_target(target_key, input_data)
 
+        # Dynamic score computation based on actual model outputs
+        dm_val = predictions["dry_matter"].predicted_value
+        cp_val = predictions["crude_protein"].predicted_value
+        cf_val = predictions["crude_fibre"].predicted_value
+        ndf_val = predictions["ndf"].predicted_value
+        adf_val = predictions["adf"].predicted_value
+        adl_val = predictions["adl"].predicted_value
+        starch_val = predictions["starch"].predicted_value
+
+        score, status_tier, why_list, action_list = calculate_feed_quality_score(
+            feed_category=input_data.feed_category,
+            dry_matter_g_per_kg=dm_val,
+            crude_protein_g_per_kg_dm=cp_val,
+            crude_fibre_g_per_kg_dm=cf_val,
+            ndf_g_per_kg_dm=ndf_val,
+            adf_g_per_kg_dm=adf_val,
+            adl_g_per_kg_dm=adl_val,
+            starch_g_per_kg_dm=starch_val
+        )
+
         return FeedNutritionMultiTargetResponse(
             feed_category=input_data.feed_category,
             detailed_feed_category=input_data.detailed_feed_category,
-            predictions=predictions
+            predictions=predictions,
+            quality_score=score,
+            quality_status=status_tier,
+            why=why_list,
+            recommended_action=action_list
         )
 
 

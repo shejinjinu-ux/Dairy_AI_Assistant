@@ -75,7 +75,8 @@ class FeedNutritionInput(BaseModel):
 class NutritionalTargetPrediction(BaseModel):
     """Prediction result for a single nutritional fraction."""
     target_name: str = Field(..., description="Nutritional variable name")
-    predicted_value: float = Field(..., description="Estimated content")
+    predicted_value: float = Field(..., description="Estimated content in target unit")
+    percentage_value: Optional[float] = Field(default=None, description="Calculated percentage value (g/kg divided by 10)")
     unit: str = Field(..., description="Measurement unit (e.g. g/kg or g/kg DM)")
     model_r2: float = Field(..., description="Validation R2 score")
 
@@ -88,6 +89,10 @@ class FeedNutritionMultiTargetResponse(BaseModel):
         ...,
         description="Map of predicted nutritional parameters (crude_protein, dry_matter, crude_fibre, ndf, adf, adl, starch)"
     )
+    quality_score: Optional[float] = Field(default=None, description="Dynamic composite nutritional quality score (0 - 100)")
+    quality_status: Optional[str] = Field(default=None, description="Dynamic quality status tier: EXCELLENT, GOOD, FAIR, POOR")
+    why: Optional[List[str]] = Field(default=None, description="Key agronomic explanation facts")
+    recommended_action: Optional[List[str]] = Field(default=None, description="Actionable feed management recommendations")
     disclaimer: str = Field(
         default="Predictions apply strictly to nutritional components represented in the verified dataset.",
         description="Nutritional scope disclaimer"

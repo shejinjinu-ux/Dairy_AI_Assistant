@@ -3,6 +3,7 @@ AI Response Generation & LLM Provider Abstraction Service
 Combines high-precision built-in domain intelligence with optional external LLM providers
 """
 
+import re
 import logging
 from typing import Any, Dict, List, Optional
 import httpx
@@ -10,6 +11,8 @@ import httpx
 from backend.config import settings
 from backend.app.services.chat.knowledge_base import get_localized_response
 from backend.app.services.chat.nutrition_service import RationRecommendationResult
+from backend.app.schemas.feed_reference import FeedReferenceRequest
+from backend.app.services.feed_reference_service import feed_reference_service
 
 logger = logging.getLogger("dairy_ai.chat.ai_service")
 
@@ -34,7 +37,7 @@ class AIService:
     ) -> str:
         """
         Generates farmer-friendly response in the target language.
-        Prioritizes structured module insights (Silage / Nutrition) and local domain rules,
+        Prioritizes structured module insights (Silage / Nutrition / Feed Reference) and local domain rules,
         with optional external LLM enhancement if configured.
         """
         # 1. Silage Module Specific Response Formatting
@@ -118,12 +121,39 @@ class AIService:
                     general_rule = get_localized_response("nutrition", target_language, "nutrition_general")
                     return f"{missing_msg}\n\n{general_rule}"
 
+        # 3. Specific Feed Ingredient / Reference Nutrition Match
+        if intent == "feed" or "feed" in module:
+            clean_msg_lower = user_message.lower()
+            # Check for specific feed mention and nutrition query
+            if any(q in clean_msg_lower for q in ["protein", "nutrition", "energy", "value", "content", "கச்சா புரதம்", "ஊட்டச்சத்து", "प्रोटीन", "पोषण"]):
+                words = user_message.split()
+                for token_len in [3, 2, 1]:
+                    for i in range(len(words) - token_len + 1):
+                        sub = " ".join(words[i:i+token_len])
+                        matched = feed_reference_service.find_feed(sub)
+                        if matched:
+                            qty_match = re.search(r'(\d+(?:\.\d+)?)\s*(?:kg|kilo|litres?|l)?', user_message, re.IGNORECASE)
+                            qty = float(qty_match.group(1)) if qty_match and float(qty_match.group(1)) < 200 else 1.0
+                            ref_res = feed_reference_service.calculate_nutrition(
+                                FeedReferenceRequest(feed_name=matched["feed_name"], quantity_kg=qty)
+                            )
+                            fname = ref_res.matched_feed_name
+                            dm = ref_res.total_for_quantity.dry_matter_g
+                            cp = ref_res.total_for_quantity.crude_protein_g
+                            me = ref_res.total_for_quantity.energy_mj
+                            
+                            if target_language == "ta":
+                                return f"{fname} ({qty} கிலோ): உலர் பொருள் {dm} கி, கச்சா புரதம் {cp} கி, ஆற்றல் {me} MJ (ICAR-NIANP தரவு)."
+                            elif target_language == "hi":
+                                return f"{fname} ({qty} किलो): शुष्क पदार्थ {dm} ग्राम, कच्चा प्रोटीन {cp} ग्राम, ऊर्जा {me} MJ (ICAR-NIANP संदर्भ)."
+                            else:
+                                return f"{fname} ({qty} kg): Dry Matter {dm}g, Crude Protein {cp}g, Energy {me} MJ (ICAR-NIANP reference composition)."
 
-        # 3. Dedicated Intent Responses (Greeting, Health, Feed, Milk Production, General Dairy)
+        # 4. Dedicated Intent Responses (Greeting, Health, Feed, Milk Production, General Dairy)
         if intent in ["greeting", "feed", "cattle_health_general", "milk_production", "animal_profile", "general_dairy", "unknown"]:
             return get_localized_response(intent, target_language)
 
-        # 4. Optional External LLM Integration (Gemini / OpenAI) if key configured
+        # 5. Optional External LLM Integration (Gemini / OpenAI) if key configured
         if self.api_key and self.provider != "local":
             try:
                 llm_reply = self._call_external_llm(user_message, target_language, conversation_history)

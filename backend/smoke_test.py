@@ -345,6 +345,85 @@ def run_smoke_tests():
         f"(Expected 422 -> Received HTTP {res_empty_chat.status_code})"
     )
 
+    # 12. Feed Reference Database & Calculation (Method 2)
+    print("\n12. Testing Feed Reference Database & Calculations (Method 2)...")
+    res_ref = client.post("/api/v1/feed/reference", json={"feed_name": "Maize", "quantity_kg": 5.0})
+    data_ref = res_ref.json()
+    check(
+        "POST /api/v1/feed/reference (Maize 5kg)",
+        res_ref.status_code == 200
+        and data_ref.get("basis") == "reference"
+        and data_ref.get("total_for_quantity", {}).get("dry_matter_g") == 4400.0,
+        f"(Feed: {data_ref.get('matched_feed_name')}, Total DM: {data_ref.get('total_for_quantity', {}).get('dry_matter_g')}g)"
+    )
+
+    res_ref_all = client.get("/api/v1/feed/reference/all")
+    check(
+        "GET /api/v1/feed/reference/all (Offline Catalog)",
+        res_ref_all.status_code == 200 and res_ref_all.json().get("total_feeds", 0) >= 25,
+        f"(Catalog Feeds: {res_ref_all.json().get('total_feeds')})"
+    )
+
+    res_ref_rules = client.get("/api/v1/feed/reference/rules")
+    check(
+        "GET /api/v1/feed/reference/rules",
+        res_ref_rules.status_code == 200 and "scoring_tiers" in res_ref_rules.json(),
+        "(Scoring rules & benchmarks exported)"
+    )
+
+    # 13. Visual Mould & Spoilage Screening (Method 1)
+    print("\n13. Testing Visual Mould & Spoilage Screening (Method 1)...")
+    res_v_feed = client.post(
+        "/api/v1/predict/feed-visual",
+        files={"file": ("sample.jpg", img224, "image/jpeg")}
+    )
+    data_v_feed = res_v_feed.json()
+    check(
+        "POST /api/v1/predict/feed-visual",
+        res_v_feed.status_code == 200 and data_v_feed.get("predicted_class") in ["GOOD", "MOULD_RISK", "SPOILED"],
+        f"(Class: {data_v_feed.get('predicted_class')}, Risk: {data_v_feed.get('risk_level')})"
+    )
+
+    res_v_silage = client.post(
+        "/api/v1/predict/silage-visual",
+        files={"file": ("silage.jpg", img224, "image/jpeg")}
+    )
+    data_v_silage = res_v_silage.json()
+    check(
+        "POST /api/v1/predict/silage-visual",
+        res_v_silage.status_code == 200 and data_v_silage.get("predicted_class") in ["GOOD", "MOULD_RISK", "SPOILED", "POOR_FERMENTATION"],
+        f"(Class: {data_v_silage.get('predicted_class')}, Risk: {data_v_silage.get('risk_level')})"
+    )
+
+    # 14. Combined Quality Analysis Endpoints
+    print("\n14. Testing Combined Feed & Silage Quality Analysis Endpoints...")
+    res_comb_feed = client.post(
+        "/api/v1/analyze/feed",
+        data={"feed_name": "Maize Grain", "quantity_kg": 5.0},
+        files={"image": ("sample.jpg", img224, "image/jpeg")}
+    )
+    data_comb_feed = res_comb_feed.json()
+    check(
+        "POST /api/v1/analyze/feed",
+        res_comb_feed.status_code == 200 and data_comb_feed.get("quality_score") is not None,
+        f"(Status: {data_comb_feed.get('status')}, Quality Score: {data_comb_feed.get('quality_score')})"
+    )
+
+    res_comb_silage = client.post(
+        "/api/v1/analyze/silage",
+        data={
+            "pH": "3.85", "dm_s": "32.0", "cp_s": "14.2", "lactic_ac_s": "6.5",
+            "acetic_ac_s": "1.8", "butyric_ac_s": "0.04", "ammonia_s": "6.0"
+        },
+        files={"image": ("silage.jpg", img224, "image/jpeg")}
+    )
+    data_comb_silage = res_comb_silage.json()
+    check(
+        "POST /api/v1/analyze/silage",
+        res_comb_silage.status_code == 200 and data_comb_silage.get("status") in ["GOOD", "CAUTION", "UNSAFE"],
+        f"(Status: {data_comb_silage.get('status')}, Quality Score: {data_comb_silage.get('quality_score')})"
+    )
+
     print("\n" + "=" * 80)
     print(f"SMOKE TEST SUMMARY: {passed} PASSED, {failed} FAILED")
     print("=" * 80)
