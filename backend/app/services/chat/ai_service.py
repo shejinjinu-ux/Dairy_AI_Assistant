@@ -33,12 +33,13 @@ class AIService:
         module: str,
         conversation_history: Optional[List[Dict[str, Any]]] = None,
         silage_data: Optional[Dict[str, Any]] = None,
-        nutrition_data: Optional[RationRecommendationResult] = None
+        nutrition_data: Optional[RationRecommendationResult] = None,
+        selected_cattle: Optional[Any] = None,
+        analysis_records: Optional[List[Any]] = None
     ) -> str:
         """
         Generates farmer-friendly response in the target language.
-        Prioritizes structured module insights (Silage / Nutrition / Feed Reference) and local domain rules,
-        with optional external LLM enhancement if configured.
+        Prioritizes authorized selected cattle context and persistent analysis records.
         """
         # 1. Silage Module Specific Response Formatting
         if intent == "silage_quality" or module == "silage":

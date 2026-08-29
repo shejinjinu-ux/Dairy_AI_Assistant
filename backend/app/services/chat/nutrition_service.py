@@ -242,10 +242,13 @@ class DefaultNutritionService(NutritionServiceInterface):
         self,
         text: str,
         language: str = "en",
-        conversation_history: Optional[List[Dict[str, str]]] = None
+        conversation_history: Optional[List[Dict[str, str]]] = None,
+        selected_cattle: Optional[Any] = None,
+        analysis_records: Optional[List[Any]] = None
     ) -> RationRecommendationResult:
         """
-        Processes natural text input, extracts animal parameters across conversation history, and executes optimization or calls registered model.
+        Processes natural text input, extracts animal parameters across conversation history,
+        and binds authorized selected_cattle metrics if provided.
         Strictly requires body weight, milk yield, and milk fat % for lactating cows.
         """
         combined_text = text
@@ -259,6 +262,22 @@ class DefaultNutritionService(NutritionServiceInterface):
                 combined_text = " ".join(past_texts) + " " + text
 
         extracted = self.parse_nutrition_entities(combined_text)
+
+        # Bind metrics from authorized selected_cattle record if not explicitly specified in query
+        if selected_cattle is not None:
+            if extracted.body_weight_kg is None and hasattr(selected_cattle, "body_weight_kg"):
+                extracted.body_weight_kg = selected_cattle.body_weight_kg
+            if extracted.daily_milk_yield_litres is None and hasattr(selected_cattle, "daily_milk_yield_litres"):
+                extracted.daily_milk_yield_litres = selected_cattle.daily_milk_yield_litres
+            if extracted.milk_fat_percentage is None and hasattr(selected_cattle, "milk_fat_percentage"):
+                extracted.milk_fat_percentage = selected_cattle.milk_fat_percentage
+            if hasattr(selected_cattle, "species") and selected_cattle.species:
+                extracted.species = selected_cattle.species
+            if hasattr(selected_cattle, "breed") and selected_cattle.breed:
+                extracted.breed = selected_cattle.breed
+            if extracted.lactation_stage is None and hasattr(selected_cattle, "lactation_stage"):
+                extracted.lactation_stage = selected_cattle.lactation_stage
+
         extracted_dict = extracted.model_dump(exclude_none=True)
 
         # Check if external ML model has been plugged in

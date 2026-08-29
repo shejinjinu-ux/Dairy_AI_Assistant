@@ -31,6 +31,16 @@ class ChatRequest(BaseModel):
         description="Optional authenticated user identifier (e.g. from Supabase auth).",
         examples=["usr_987654321"]
     )
+    farm_id: Optional[str] = Field(
+        default=None,
+        description="Optional farm identifier to scope context.",
+        examples=["farm_123"]
+    )
+    selected_animal_id: Optional[str] = Field(
+        default=None,
+        description="Optional selected animal identifier (e.g. 'COW_456'). If supplied, AI Advisory uses ONLY this authorized animal's profile.",
+        examples=["COW_456"]
+    )
 
     @field_validator("message")
     @classmethod

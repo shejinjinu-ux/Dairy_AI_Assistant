@@ -42,6 +42,10 @@ class CombinedFeedAnalysisResponse(BaseModel):
     )
     why: List[str] = Field(..., description="Structured evidence supporting the quality score")
     recommended_action: List[str] = Field(..., description="Actionable recommendations for feed storage and usage")
+    farm_id: Optional[str] = Field(default=None, description="Associated farm ID")
+    animal_id: Optional[str] = Field(default=None, description="Associated animal ID")
+    record_id: Optional[str] = Field(default=None, description="Persistent analysis history record ID")
+    persisted_at: Optional[str] = Field(default=None, description="ISO timestamp when persistent record was saved")
     disclaimer: str = Field(
         default="Screening and reference analysis. Laboratory chemical and microbiological assay required for definitive safety certification.",
         description="Analysis scope disclaimer"
@@ -71,6 +75,10 @@ class CombinedSilageAnalysisResponse(BaseModel):
     )
     why: List[str] = Field(..., description="Structured evidence supporting the quality score")
     recommended_action: List[str] = Field(..., description="Actionable recommendations for silo face and herd feeding management")
+    farm_id: Optional[str] = Field(default=None, description="Associated farm ID")
+    animal_id: Optional[str] = Field(default=None, description="Associated animal ID")
+    record_id: Optional[str] = Field(default=None, description="Persistent analysis history record ID")
+    persisted_at: Optional[str] = Field(default=None, description="ISO timestamp when persistent record was saved")
     disclaimer: str = Field(
         default="Silage screening analysis based on proximal fermentation metrics. Laboratory confirmation required for comprehensive microbiological analysis.",
         description="Analysis scope disclaimer"

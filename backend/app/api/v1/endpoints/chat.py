@@ -3,10 +3,12 @@ Multilingual AI Chatbot Endpoints
 """
 
 import logging
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Request, HTTPException, status
 from backend.app.schemas.chat import ChatRequest, ChatResponse, ChatErrorResponse
 from backend.app.services.chat.chat_service import chat_service
 from backend.app.db.chat_repository import SessionAccessDeniedError, ChatPersistenceError
+from backend.app.core.ownership_guard import ownership_guard
+from backend.app.core.exceptions import AppBaseException
 
 logger = logging.getLogger("dairy_ai.api.chat")
 
@@ -25,25 +27,35 @@ router = APIRouter(prefix="/chat", tags=["Multilingual AI Chat Assistant"])
         500: {"model": ChatErrorResponse, "description": "Internal server or persistence error."}
     }
 )
-async def process_chat(payload: ChatRequest):
+async def process_chat(request: Request, payload: ChatRequest):
     """
     Communicates with the Multilingual Dairy AI Assistant in 20+ Indian languages.
 
     - **message**: Farmer message in native script or Romanized Tanglish/Hinglish (required).
     - **language**: Optional explicit ISO language code (e.g. `ta`, `hi`, `te`, `kn`, `ml`, `en`). If omitted, detected automatically.
     - **session_id**: Optional session ID to maintain conversation memory across turns.
-    - **user_id**: Optional authenticated user ID (e.g. from Supabase).
-
-    **Supported Capabilities**:
-    1. Automatic language detection and localized responses across 20+ Indian languages.
-    2. Intelligent intent classification across 9 dairy domains.
-    3. Seamless routing to Silage quality evaluation.
-    4. Pluggable Field Nutrition ration formulation interface.
-    5. Multi-turn conversational memory with Supabase persistence.
+    - **user_id**: Optional authenticated user ID.
+    - **farm_id**: Optional farm ID.
+    - **selected_animal_id**: Optional selected animal ID to restrict advisory to that specific authorized animal.
     """
     try:
-        response = chat_service.process_message(payload)
+        # Derive authenticated user identity and validate ownership if farm_id or selected_animal_id provided
+        auth_user_id = ownership_guard.extract_authenticated_user_id(request) or payload.user_id
+        if auth_user_id:
+            payload.user_id = auth_user_id
+            
+        ownership_guard.validate_request_ownership(
+            request=request,
+            farm_id=payload.farm_id,
+            animal_id=payload.selected_animal_id,
+            require_auth=False
+        )
+        response = chat_service.process_message(payload, http_request=request)
         return response
+    except HTTPException:
+        raise
+    except AppBaseException:
+        raise
     except SessionAccessDeniedError as e:
         logger.warning(f"Session access denied: {e}")
         raise HTTPException(
