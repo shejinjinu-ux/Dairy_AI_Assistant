@@ -6,7 +6,7 @@ Covers all 16 verification requirements from Step 14.
 
 import io
 import pytest
-from PIL import Image
+from PIL import Image, ImageDraw
 from fastapi.testclient import TestClient
 
 from backend.main import app
@@ -25,8 +25,17 @@ client = TestClient(app)
 
 
 def generate_test_image(size=(224, 224), color=(140, 160, 120)) -> bytes:
-    """Generate in-memory RGB JPEG image bytes."""
-    img = Image.new("RGB", size, color=color)
+    """Generate in-memory RGB JPEG image bytes with texture variance."""
+    import numpy as np
+    arr = np.zeros((size[1], size[0], 3), dtype=np.uint8)
+    arr[:, :, 0] = np.clip(color[0] + np.random.randint(-15, 15, size), 0, 255)
+    arr[:, :, 1] = np.clip(color[1] + np.random.randint(-15, 15, size), 0, 255)
+    arr[:, :, 2] = np.clip(color[2] + np.random.randint(-15, 15, size), 0, 255)
+    img = Image.fromarray(arr)
+    d = ImageDraw.Draw(img)
+    for _ in range(30):
+        x1, y1 = np.random.randint(0, size[0] - 10, 2)
+        d.line([x1, y1, x1 + 15, y1 + 15], fill=(max(0, color[0]-25), max(0, color[1]-25), max(0, color[2]-25)), width=2)
     buf = io.BytesIO()
     img.save(buf, format="JPEG")
     return buf.getvalue()
@@ -286,12 +295,17 @@ def create_synthetic_mouldy_image() -> bytes:
 
 
 def create_synthetic_spoiled_image() -> bytes:
-    """Severely decomposed, black slimy rotten feed."""
-    img = Image.new("RGB", (300, 300), color=(25, 20, 18))
-    from PIL import ImageDraw
+    """Severely decomposed feed with extensive black slimy rotten patches on grain background."""
+    import numpy as np
+    arr = np.zeros((300, 300, 3), dtype=np.uint8)
+    arr[:, :, 0] = np.random.randint(160, 200, (300, 300))
+    arr[:, :, 1] = np.random.randint(130, 170, (300, 300))
+    arr[:, :, 2] = np.random.randint(50, 80, (300, 300))
+    img = Image.fromarray(arr)
     draw = ImageDraw.Draw(img)
-    for _ in range(50):
-        draw.ellipse([40, 40, 200, 200], fill=(15, 12, 10))
+    # Massive contiguous dark rot & black slimy decomposition patches (>35% coverage)
+    draw.rectangle([20, 20, 280, 200], fill=(15, 12, 10))
+    draw.ellipse([50, 180, 260, 290], fill=(18, 14, 12))
     buf = io.BytesIO()
     img.save(buf, format="JPEG")
     return buf.getvalue()
@@ -528,3 +542,330 @@ def test_16_error_handling():
     res_rules = client.get("/api/v1/feed/reference/rules")
     assert res_rules.status_code == 200
     assert "scoring_tiers" in res_rules.json()
+
+
+# ==============================================================================
+# 17-21. Domain Validation & Non-Feed Image Rejection Tests (Cases A, B, C, D, E)
+# ==============================================================================
+
+def create_test_human_image() -> bytes:
+    img = Image.new("RGB", (224, 224), color=(240, 235, 230))
+    d = ImageDraw.Draw(img)
+    d.ellipse([60, 30, 164, 130], fill=(225, 175, 140)) # face
+    d.ellipse([70, 20, 154, 65], fill=(30, 20, 15))     # hair
+    d.rectangle([40, 130, 184, 224], fill=(35, 75, 150)) # shirt
+    buf = io.BytesIO()
+    img.save(buf, format="JPEG")
+    return buf.getvalue()
+
+def create_test_laptop_image() -> bytes:
+    img = Image.new("RGB", (224, 224), color=(180, 180, 180))
+    d = ImageDraw.Draw(img)
+    d.rectangle([30, 30, 194, 150], fill=(30, 30, 30))
+    d.rectangle([40, 40, 184, 140], fill=(70, 130, 180))
+    d.rectangle([100, 150, 124, 180], fill=(80, 80, 80))
+    d.rectangle([70, 180, 154, 195], fill=(50, 50, 50))
+    buf = io.BytesIO()
+    img.save(buf, format="JPEG")
+    return buf.getvalue()
+
+def create_test_cattle_image() -> bytes:
+    try:
+        real_img = Image.open("datasets/extracted/cattle_breeds/cattle/Amritmahal/Amritmahal_1.JPG")
+        buf = io.BytesIO()
+        real_img.save(buf, format="JPEG")
+        return buf.getvalue()
+    except Exception:
+        img = Image.new("RGB", (224, 224), color=(100, 130, 70))
+        d = ImageDraw.Draw(img)
+        d.ellipse([50, 80, 180, 160], fill=(40, 40, 40))
+        buf = io.BytesIO()
+        img.save(buf, format="JPEG")
+        return buf.getvalue()
+
+def create_test_feed_grain_image() -> bytes:
+    import numpy as np
+    arr = np.zeros((224, 224, 3), dtype=np.uint8)
+    np.random.seed(42)
+    arr[:, :, 0] = np.random.randint(180, 225, (224, 224))
+    arr[:, :, 1] = np.random.randint(150, 195, (224, 224))
+    arr[:, :, 2] = np.random.randint(50, 95, (224, 224))
+    img = Image.fromarray(arr)
+    d = ImageDraw.Draw(img)
+    for _ in range(40):
+        x1, y1 = np.random.randint(0, 220, 2)
+        d.line([x1, y1, x1 + np.random.randint(-10, 10), y1 + np.random.randint(10, 30)], fill=(160, 130, 40), width=2)
+    buf = io.BytesIO()
+    img.save(buf, format="JPEG")
+    return buf.getvalue()
+
+def create_test_silage_forage_image() -> bytes:
+    import numpy as np
+    arr = np.zeros((224, 224, 3), dtype=np.uint8)
+    np.random.seed(123)
+    arr[:, :, 0] = np.random.randint(110, 150, (224, 224))
+    arr[:, :, 1] = np.random.randint(130, 170, (224, 224))
+    arr[:, :, 2] = np.random.randint(45, 80, (224, 224))
+    img = Image.fromarray(arr)
+    d = ImageDraw.Draw(img)
+    for _ in range(50):
+        x1, y1 = np.random.randint(0, 220, 2)
+        d.line([x1, y1, x1 + np.random.randint(-10, 20), y1 + np.random.randint(5, 25)], fill=(90, 110, 35), width=2)
+    buf = io.BytesIO()
+    img.save(buf, format="JPEG")
+    return buf.getvalue()
+
+
+def test_17_human_image_rejection_case_a():
+    """Case A: Human image must return NOT_FEED_OR_SILAGE, INVALID_IMAGE and never classify as GOOD/MOULD_RISK/SPOILED."""
+    human_bytes = create_test_human_image()
+    # Feed endpoint test
+    res = client.post(
+        "/api/v1/predict/feed-visual",
+        files={"file": ("human_portrait.jpg", human_bytes, "image/jpeg")}
+    )
+    assert res.status_code == 200
+    data = res.json()
+    assert data["success"] is False
+    assert data["error_type"] == "INVALID_IMAGE"
+    assert data["classification"] == "NOT_FEED_OR_SILAGE"
+    assert data["predicted_class"] is None
+    assert data["confidence"] == 0.0
+    assert "person" in data["message"].lower() or "human" in data["message"].lower() or "feed" in data["message"].lower()
+
+    # Silage endpoint test
+    res_silage = client.post(
+        "/api/v1/predict/silage-visual",
+        files={"file": ("human_portrait.jpg", human_bytes, "image/jpeg")}
+    )
+    assert res_silage.status_code == 200
+    sdata = res_silage.json()
+    assert sdata["success"] is False
+    assert sdata["error_type"] == "INVALID_IMAGE"
+    assert sdata["classification"] == "NOT_FEED_OR_SILAGE"
+    assert sdata["predicted_class"] is None
+
+
+def test_18_random_non_feed_image_rejection_case_b():
+    """Case B: Random non-feed object (e.g. laptop/screen) must return NOT_FEED_OR_SILAGE."""
+    laptop_bytes = create_test_laptop_image()
+    res = client.post(
+        "/api/v1/predict/feed-visual",
+        files={"file": ("laptop.jpg", laptop_bytes, "image/jpeg")}
+    )
+    assert res.status_code == 200
+    data = res.json()
+    assert data["success"] is False
+    assert data["error_type"] == "INVALID_IMAGE"
+    assert data["classification"] == "NOT_FEED_OR_SILAGE"
+    assert data["predicted_class"] is None
+
+
+def test_19_cattle_only_photo_rejection_case_c():
+    """Case C: Cattle-only photo without feed must return NOT_FEED_OR_SILAGE."""
+    cattle_bytes = create_test_cattle_image()
+    res = client.post(
+        "/api/v1/predict/feed-visual",
+        files={"file": ("cattle.jpg", cattle_bytes, "image/jpeg")}
+    )
+    assert res.status_code == 200
+    data = res.json()
+    assert data["success"] is False
+    assert data["error_type"] == "INVALID_IMAGE"
+    assert data["classification"] == "NOT_FEED_OR_SILAGE"
+    assert data["predicted_class"] is None
+
+
+def test_20_valid_feed_image_passes_case_d():
+    """Case D: Valid feed image continues to quality analysis with valid predicted_class."""
+    feed_bytes = create_test_feed_grain_image()
+    res = client.post(
+        "/api/v1/predict/feed-visual",
+        files={"file": ("feed_grain.jpg", feed_bytes, "image/jpeg")}
+    )
+    assert res.status_code == 200
+    data = res.json()
+    assert data["success"] is True
+    assert data["classification"] == "FEED_SAMPLE"
+    assert data["predicted_class"] in ["GOOD", "MOULD_RISK", "SPOILED"]
+    assert data["confidence"] > 0.0
+
+
+def test_21_valid_silage_image_passes_case_e():
+    """Case E: Valid silage image continues to silage quality analysis with valid predicted_class."""
+    silage_bytes = create_test_silage_forage_image()
+    res = client.post(
+        "/api/v1/predict/silage-visual",
+        files={"file": ("silage_forage.jpg", silage_bytes, "image/jpeg")}
+    )
+    assert res.status_code == 200
+    data = res.json()
+    assert data["success"] is True
+    assert data["classification"] == "SILAGE_SAMPLE"
+    assert data["predicted_class"] in ["GOOD", "MOULD_RISK", "SPOILED", "POOR_FERMENTATION"]
+    assert data["confidence"] > 0.0
+
+def create_feed_held_by_hand_image() -> bytes:
+    """Close up hay/straw feed with farmer hand/fingers visible at corner."""
+    import numpy as np
+    arr = np.zeros((224, 224, 3), dtype=np.uint8)
+    np.random.seed(42)
+    arr[:, :, 0] = np.random.randint(180, 225, (224, 224))
+    arr[:, :, 1] = np.random.randint(150, 195, (224, 224))
+    arr[:, :, 2] = np.random.randint(50, 95, (224, 224))
+    img = Image.fromarray(arr)
+    d = ImageDraw.Draw(img)
+    for i in range(0, 224, 6):
+        d.line([(i, 0), (i + 15, 224)], fill=(220, 190, 70), width=2)
+        d.line([(0, i), (224, i + 10)], fill=(150, 110, 30), width=1)
+    d.polygon([(0, 150), (90, 150), (100, 224), (0, 224)], fill=(215, 165, 130))
+    d.ellipse([(20, 140), (60, 200)], fill=(220, 170, 135))
+    d.ellipse([(55, 145), (95, 205)], fill=(210, 160, 125))
+    buf = io.BytesIO()
+    img.save(buf, format="JPEG")
+    return buf.getvalue()
+
+
+def create_silage_held_by_hand_image() -> bytes:
+    """Close up chopped silage with farmer hand/fingers visible at bottom."""
+    import numpy as np
+    arr = np.zeros((224, 224, 3), dtype=np.uint8)
+    np.random.seed(123)
+    arr[:, :, 0] = np.random.randint(110, 150, (224, 224))
+    arr[:, :, 1] = np.random.randint(130, 170, (224, 224))
+    arr[:, :, 2] = np.random.randint(45, 80, (224, 224))
+    img = Image.fromarray(arr)
+    d = ImageDraw.Draw(img)
+    for x in range(5, 220, 15):
+        for y in range(5, 220, 15):
+            d.rectangle([x, y, x + 10, y + 6], fill=(135, 160, 50), outline=(90, 110, 35))
+    d.polygon([(140, 160), (224, 150), (224, 224), (130, 224)], fill=(210, 160, 125))
+    d.ellipse([(145, 145), (185, 210)], fill=(215, 165, 130))
+    buf = io.BytesIO()
+    img.save(buf, format="JPEG")
+    return buf.getvalue()
+
+# ==============================================================================
+# 17-24. Domain Validation Test Suite (Cases A through H)
+# ==============================================================================
+
+def test_17_human_image_rejection_case_a():
+    """Case A: Human portrait/selfie must return NOT_FEED_OR_SILAGE and INVALID_IMAGE."""
+    human_bytes = create_test_human_image()
+    res = client.post(
+        "/api/v1/predict/feed-visual",
+        files={"file": ("human_selfie.jpg", human_bytes, "image/jpeg")}
+    )
+    assert res.status_code == 200
+    data = res.json()
+    assert data["success"] is False
+    assert data["error_type"] == "INVALID_IMAGE"
+    assert data["classification"] == "NOT_FEED_OR_SILAGE"
+    assert data["predicted_class"] is None
+    assert "person or human" in data["message"].lower() or "feed" in data["message"].lower()
+
+
+def test_18_random_non_feed_image_rejection_case_b():
+    """Case B: Random non-feed object (e.g. laptop/screen) must return NOT_FEED_OR_SILAGE."""
+    laptop_bytes = create_test_laptop_image()
+    res = client.post(
+        "/api/v1/predict/feed-visual",
+        files={"file": ("laptop.jpg", laptop_bytes, "image/jpeg")}
+    )
+    assert res.status_code == 200
+    data = res.json()
+    assert data["success"] is False
+    assert data["error_type"] == "INVALID_IMAGE"
+    assert data["classification"] == "NOT_FEED_OR_SILAGE"
+    assert data["predicted_class"] is None
+
+
+def test_19_cattle_only_photo_rejection_case_c():
+    """Case C: Cattle-only portrait photo without feed must return NOT_FEED_OR_SILAGE."""
+    cattle_bytes = create_test_cattle_image()
+    res = client.post(
+        "/api/v1/predict/feed-visual",
+        files={"file": ("cattle.jpg", cattle_bytes, "image/jpeg")}
+    )
+    assert res.status_code == 200
+    data = res.json()
+    assert data["success"] is False
+    assert data["error_type"] == "INVALID_IMAGE"
+    assert data["classification"] == "NOT_FEED_OR_SILAGE"
+    assert data["predicted_class"] is None
+
+
+def test_20_valid_feed_image_passes_case_d():
+    """Case D: Valid feed image without hand continues to quality analysis with valid predicted_class."""
+    feed_bytes = create_test_feed_grain_image()
+    res = client.post(
+        "/api/v1/predict/feed-visual",
+        files={"file": ("feed_grain.jpg", feed_bytes, "image/jpeg")}
+    )
+    assert res.status_code == 200
+    data = res.json()
+    assert data["success"] is True
+    assert data["classification"] == "FEED_SAMPLE"
+    assert data["predicted_class"] in ["GOOD", "MOULD_RISK", "SPOILED"]
+    assert 0.0 <= data["confidence"] <= 1.0
+
+
+def test_21_valid_feed_held_by_hand_passes_case_e():
+    """Case E: Valid feed held by human hand MUST be accepted and evaluated for quality."""
+    feed_hand_bytes = create_feed_held_by_hand_image()
+    res = client.post(
+        "/api/v1/predict/feed-visual",
+        files={"file": ("feed_in_hand.jpg", feed_hand_bytes, "image/jpeg")}
+    )
+    assert res.status_code == 200
+    data = res.json()
+    assert data["success"] is True
+    assert data["classification"] == "FEED_SAMPLE"
+    assert data["predicted_class"] in ["GOOD", "MOULD_RISK", "SPOILED"]
+    assert 0.0 <= data["confidence"] <= 1.0
+    assert "visual_indicators" in data
+
+
+def test_22_valid_silage_image_passes_case_f():
+    """Case F: Valid silage image without hand continues to silage quality analysis."""
+    silage_bytes = create_test_silage_forage_image()
+    res = client.post(
+        "/api/v1/predict/silage-visual",
+        files={"file": ("silage_forage.jpg", silage_bytes, "image/jpeg")}
+    )
+    assert res.status_code == 200
+    data = res.json()
+    assert data["success"] is True
+    assert data["classification"] == "SILAGE_SAMPLE"
+    assert data["predicted_class"] in ["GOOD", "MOULD_RISK", "SPOILED", "POOR_FERMENTATION"]
+    assert 0.0 <= data["confidence"] <= 1.0
+
+
+def test_23_valid_silage_held_by_hand_passes_case_g():
+    """Case G: Valid silage held by human hand MUST be accepted and evaluated for quality."""
+    silage_hand_bytes = create_silage_held_by_hand_image()
+    res = client.post(
+        "/api/v1/predict/silage-visual",
+        files={"file": ("silage_in_hand.jpg", silage_hand_bytes, "image/jpeg")}
+    )
+    assert res.status_code == 200
+    data = res.json()
+    assert data["success"] is True
+    assert data["classification"] == "SILAGE_SAMPLE"
+    assert data["predicted_class"] in ["GOOD", "MOULD_RISK", "SPOILED", "POOR_FERMENTATION"]
+    assert 0.0 <= data["confidence"] <= 1.0
+
+
+def test_24_human_portrait_rejected_on_silage_case_h():
+    """Case H: Human portrait uploaded to silage screening must be rejected as INVALID_IMAGE."""
+    human_bytes = create_test_human_image()
+    res = client.post(
+        "/api/v1/predict/silage-visual",
+        files={"file": ("human_portrait.jpg", human_bytes, "image/jpeg")}
+    )
+    assert res.status_code == 200
+    data = res.json()
+    assert data["success"] is False
+    assert data["error_type"] == "INVALID_IMAGE"
+    assert data["classification"] == "NOT_FEED_OR_SILAGE"
+    assert data["predicted_class"] is None

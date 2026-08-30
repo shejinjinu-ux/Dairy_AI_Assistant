@@ -23,7 +23,7 @@ class RiskAssessmentService:
     ) -> ComprehensiveRiskAnalysis:
         """Generates comprehensive risk framework for animal feed sample."""
         # 1. Mould Risk
-        if visual_screening is not None:
+        if visual_screening is not None and visual_screening.success:
             mould_level = visual_screening.risk_level
             mould_basis = "RULE_BASED_IMAGE_ANALYSIS"
             if visual_screening.predicted_class == "GOOD":
@@ -95,7 +95,7 @@ class RiskAssessmentService:
     ) -> ComprehensiveRiskAnalysis:
         """Generates comprehensive risk framework for preserved silage."""
         # 1. Mould Risk
-        if visual_screening is not None:
+        if visual_screening is not None and visual_screening.success:
             mould_level = visual_screening.risk_level
             mould_basis = "RULE_BASED_IMAGE_ANALYSIS"
             mould_details = f"Visual screening class: {visual_screening.predicted_class} (confidence: {visual_screening.confidence_percentage}%)."

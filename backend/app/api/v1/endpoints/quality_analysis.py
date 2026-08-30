@@ -116,8 +116,8 @@ async def analyze_feed(
                 starch_g_per_kg_dm=starch_g
             )
 
-        # Apply Visual Mould Penalty if image screening performed
-        if visual_response is not None:
+        # Apply Visual Mould Penalty if image screening performed and was valid
+        if visual_response is not None and visual_response.success:
             if visual_response.predicted_class == "SPOILED":
                 base_score = max(10.0, base_score - 45.0)
                 why_items.insert(0, "CRITICAL: Visual screening detected severe surface spoilage and decomposition.")
@@ -128,6 +128,8 @@ async def analyze_feed(
                 action_items.insert(0, "Isolate batch and avoid feeding mouldy portions.")
             else:
                 why_items.append("Visual screening confirmed clean surface with no visible fungal patches.")
+        elif visual_response is not None and not visual_response.success:
+            why_items.append(f"Visual screening note: {visual_response.message or 'Image not recognized as cattle feed; visual quality penalty skipped.'}")
 
         final_score = round(max(0.0, min(100.0, base_score)), 1)
         if final_score >= 85.0:
@@ -269,7 +271,7 @@ async def analyze_silage(
         why_list = list(screening_res.why if screening_res else [])
         action_list = list(screening_res.recommended_action if screening_res else [])
 
-        if visual_res is not None:
+        if visual_res is not None and visual_res.success:
             if visual_res.predicted_class == "SPOILED":
                 score = max(0.0, score - 40.0)
                 why_list.insert(0, "CRITICAL: Visual screening shows severe surface spoilage / slimy decomposition.")
@@ -283,6 +285,8 @@ async def analyze_silage(
                 why_list.append("Visual texture indicates possible aerobic deterioration or heating.")
             else:
                 why_list.append("Visual screening confirmed normal, well-preserved silage appearance.")
+        elif visual_res is not None and not visual_res.success:
+            why_list.append(f"Visual screening note: {visual_res.message or 'Image not recognized as silage; visual quality penalty skipped.'}")
 
         final_score = round(max(0.0, min(100.0, score)), 1)
         if final_score >= 75.0 and (visual_res is None or visual_res.predicted_class == "GOOD"):

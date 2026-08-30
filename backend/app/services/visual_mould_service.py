@@ -1,9 +1,10 @@
 """
 Rule-Based Visual Mould & Spoilage Screening Service (Method 1)
-Lightweight heuristic computer vision analyzer for visual mould and spoilage risk screening.
-Note: This is a rule-based computer vision analyzer based on chromatic anomaly, spatial neighborhood
-clustering, and texture gradient heuristics. It is NOT a trained deep learning neural network model
-(no trained weights or labeled image datasets exist in the repository).
+Lightweight computer vision analyzer with multi-tier Domain Validation Gate.
+
+Non-feed/silage images (humans, animals, vehicles, electronics, furniture, landscapes, blank screens)
+are strictly rejected upfront with structured validation responses (NOT_FEED_OR_SILAGE) and never
+assigned false mould, spoilage, or quality scores.
 """
 
 import io
@@ -18,6 +19,7 @@ from backend.app.schemas.visual_screening import (
     SilageVisualScreeningResponse,
     VisualIndicators
 )
+from backend.app.services.image_domain_validator import image_domain_validator
 from backend.app.core.exceptions import ImageProcessingError
 
 logger = logging.getLogger("dairy_ai.visual_mould")
@@ -29,10 +31,10 @@ SILAGE_CLASSES = ["GOOD", "MOULD_RISK", "SPOILED", "POOR_FERMENTATION"]
 
 class VisualMouldScreeningService:
     """
-    Service handling rule-based visual mould, fungal risk, and aerobic spoilage screening.
-    Operates via spatial neighborhood density filtering, chromatic segmentation, and texture heuristics.
-    Requires multi-evidence agreement before assigning mould or spoilage risk to prevent false positives
-    from specular reflections, kernel boundaries, or natural shadows.
+    Service handling domain-validated visual mould, fungal risk, and aerobic spoilage screening.
+    Operates in two phases:
+    Phase 1: Domain Validation Gate (Rejects human, animal, vehicle, indoor, landscape, blank photos).
+    Phase 2: Morphological neighborhood density filtering & chromatic texture analysis for confirmed feed/silage.
     """
 
     def validate_and_load_image(self, file_bytes: bytes, max_size_mb: float = 15.0) -> Image.Image:
@@ -100,12 +102,10 @@ class VisualMouldScreeningService:
             raw_aerobic_heat = np.zeros_like(gray, dtype=bool)
 
         # 7. Spatial Morphological Neighborhood Density (11x11 window)
-        # Discards isolated 1-pixel specular reflections or thin interstitial kernel shadows.
-        # Retains genuine contiguous fungal colonies and rotting regions.
-        white_density = uniform_filter(raw_white_mask.astype(np.float32), size=11, mode='reflect')
-        green_density = uniform_filter(raw_green_mask.astype(np.float32), size=11, mode='reflect')
-        dark_rot_density = uniform_filter(raw_dark_rot.astype(np.float32), size=11, mode='reflect')
-        aerobic_density = uniform_filter(raw_aerobic_heat.astype(np.float32), size=11, mode='reflect') if is_silage else np.zeros_like(gray)
+        white_density = uniform_filter(raw_white_mask.astype(np.float32), size=11, mode="reflect")
+        green_density = uniform_filter(raw_green_mask.astype(np.float32), size=11, mode="reflect")
+        dark_rot_density = uniform_filter(raw_dark_rot.astype(np.float32), size=11, mode="reflect")
+        aerobic_density = uniform_filter(raw_aerobic_heat.astype(np.float32), size=11, mode="reflect") if is_silage else np.zeros_like(gray)
 
         # Coherent cluster requires local neighborhood density > 0.35
         clustered_white_mask = raw_white_mask & (white_density > 0.35)
@@ -158,10 +158,44 @@ class VisualMouldScreeningService:
 
     def predict_feed_visual(self, file_bytes: bytes) -> FeedVisualScreeningResponse:
         """
-        Screens feed sample image for visual mould and spoilage risk using calibrated rule-based computer vision.
-        Probabilities are strictly normalized in [0.0, 1.0] and sum to 1.0.
+        Screens feed sample image for visual mould and spoilage risk.
+        Step 1: Domain Validation Gate.
+        Step 2: Quality Classification (only for valid feed images).
         """
         image = self.validate_and_load_image(file_bytes)
+
+        # Step 1: Strict Domain Validation Gate
+        domain_check = image_domain_validator.validate_sample(image, target_domain="feed")
+        if not domain_check.is_valid:
+            logger.info(f"Feed visual screening rejected non-feed image: {domain_check.domain} ({domain_check.message})")
+            return FeedVisualScreeningResponse(
+                success=False,
+                error_type=domain_check.error_type or "INVALID_IMAGE",
+                classification=domain_check.classification or "NOT_FEED_OR_SILAGE",
+                message=domain_check.message or "Please upload a clear image of cattle feed for quality testing.",
+                predicted_class=None,
+                confidence=0.0,
+                confidence_percentage=0.0,
+                risk_level="LOW",
+                screening_type="visual_mould_screening",
+                probabilities={
+                    "GOOD": 0.0,
+                    "MOULD_RISK": 0.0,
+                    "SPOILED": 0.0
+                },
+                visual_indicators=None,
+                why=[
+                    "The uploaded image does not contain recognizable cattle feed.",
+                    domain_check.message or "Image rejected by domain suitability validation."
+                ],
+                recommended_action=[
+                    "Please upload or capture a clear, close-up photo of cattle feed (e.g. green fodder, straw, maize grain, concentrate pellets).",
+                    "Ensure adequate lighting and that the feed sample fills the camera frame."
+                ],
+                disclaimer="Visual screening requires a clear close-up photo of cattle feed. Laboratory assay required for chemical toxins."
+            )
+
+        # Step 2: Quality Classification on Confirmed Feed Image
         indicators, discolouration, roughness, metrics = self.extract_visual_features(image, is_silage=False)
 
         c_white = metrics["clustered_white_pct"]
@@ -238,6 +272,7 @@ class VisualMouldScreeningService:
 
         return FeedVisualScreeningResponse(
             success=True,
+            classification="FEED_SAMPLE",
             predicted_class=pred_class,
             confidence=confidence,
             confidence_percentage=confidence_pct,
@@ -252,10 +287,45 @@ class VisualMouldScreeningService:
 
     def predict_silage_visual(self, file_bytes: bytes) -> SilageVisualScreeningResponse:
         """
-        Screens silage sample image for visual mould, aerobic heating, and spoilage risk using calibrated rule-based computer vision.
-        Probabilities are strictly normalized in [0.0, 1.0] and sum to 1.0.
+        Screens silage sample image for visual mould, aerobic heating, and spoilage risk.
+        Step 1: Domain Validation Gate.
+        Step 2: Quality Classification (only for valid silage images).
         """
         image = self.validate_and_load_image(file_bytes)
+
+        # Step 1: Strict Domain Validation Gate
+        domain_check = image_domain_validator.validate_sample(image, target_domain="silage")
+        if not domain_check.is_valid:
+            logger.info(f"Silage visual screening rejected non-silage image: {domain_check.domain} ({domain_check.message})")
+            return SilageVisualScreeningResponse(
+                success=False,
+                error_type=domain_check.error_type or "INVALID_IMAGE",
+                classification=domain_check.classification or "NOT_FEED_OR_SILAGE",
+                message=domain_check.message or "Please upload a clear image of silage for quality testing.",
+                predicted_class=None,
+                confidence=0.0,
+                confidence_percentage=0.0,
+                risk_level="LOW",
+                screening_type="visual_silage_spoilage_screening",
+                probabilities={
+                    "GOOD": 0.0,
+                    "MOULD_RISK": 0.0,
+                    "SPOILED": 0.0,
+                    "POOR_FERMENTATION": 0.0
+                },
+                visual_indicators=None,
+                why=[
+                    "The uploaded image does not contain recognizable silage.",
+                    domain_check.message or "Image rejected by domain suitability validation."
+                ],
+                recommended_action=[
+                    "Please upload or capture a clear, close-up photo of silage (e.g. bunker face or forage sample).",
+                    "Ensure adequate lighting and that the silage sample fills the camera frame."
+                ],
+                disclaimer="Visual screening requires a clear close-up photo of silage. Laboratory assay required for chemical toxins."
+            )
+
+        # Step 2: Quality Classification on Confirmed Silage Image
         indicators, discolouration, roughness, metrics = self.extract_visual_features(image, is_silage=True)
 
         c_white = metrics["clustered_white_pct"]
@@ -299,10 +369,12 @@ class VisualMouldScreeningService:
             "POOR_FERMENTATION": p_poor
         }
 
+        # Class determination based on highest rule agreement probability
         pred_class = max(prob_map, key=prob_map.get)
         confidence = prob_map[pred_class]
         confidence_pct = round(confidence * 100.0, 1)
 
+        # Risk Tier
         if pred_class == "SPOILED":
             risk_level = "CRITICAL"
         elif pred_class == "MOULD_RISK":
@@ -312,30 +384,35 @@ class VisualMouldScreeningService:
         else:
             risk_level = "LOW"
 
+        # Explainability & Recommendations
         why: List[str] = []
         actions: List[str] = []
 
         if pred_class == "GOOD":
-            why.append("Silage displays characteristic olive-green/golden coloration with no visible surface mould.")
-            actions.append("Advance silo face at least 15-20 cm daily to maintain aerobic stability.")
+            why.append("Silage surface displays normal, well-fermented olive-green to golden-brown coloration.")
+            why.append("No visible mould mycelia or dark aerobic decomposition patches detected.")
+            actions.append("Continue standard silo/bunker management and maintain airtight face pack.")
         elif pred_class == "MOULD_RISK":
-            why.append("Visual evidence of white/grey/green surface mould clusters on silage face.")
-            actions.append("Manually discard the top 5-10 cm layer of mouldy silage before daily feeding.")
-            actions.append("Check silage compaction density and plastic sheeting integrity.")
+            why.append("Visible surface mould patches and fungal cluster spots detected on silage face.")
+            actions.append("Discard the top 5-10 cm layer of mouldy silage before feeding herd.")
+            actions.append("Do NOT feed visibly mouldy portions to high-producing dairy cattle or transition cows.")
         elif pred_class == "POOR_FERMENTATION":
-            why.append("Surface texture and dark discolouration suggest slow acid production or aerobic heating.")
-            actions.append("Check silage pH and compaction; pack tightly and minimize air infiltration.")
+            why.append("Dark caramelized discolouration detected, suggesting aerobic exposure and heating.")
+            actions.append("Feed out faster (minimum 15-20 cm/day) to minimize oxygen exposure at bunker face.")
+            actions.append("Check plastic seal and weights on pit cover to prevent air ingress.")
         else:  # SPOILED
-            why.append("Extensive black/slimy decomposition and structural breakdown observed.")
-            actions.append("Discard spoiled material immediately. Never feed rotten or slimy silage to cattle.")
+            why.append("Extensive dark decomposition, structural breakdown, and high risk of clostridial/secondary spoilage.")
+            actions.append("Discard affected silage entirely; unsuitable for dairy cattle.")
+            actions.append("Ensure proper compaction and rapid sealing during future silo filling.")
 
         return SilageVisualScreeningResponse(
             success=True,
+            classification="SILAGE_SAMPLE",
             predicted_class=pred_class,
             confidence=confidence,
             confidence_percentage=confidence_pct,
             risk_level=risk_level,
-            screening_type="rule_based_silage_spoilage_screening",
+            screening_type="visual_silage_spoilage_screening",
             probabilities=prob_map,
             visual_indicators=indicators,
             why=why,

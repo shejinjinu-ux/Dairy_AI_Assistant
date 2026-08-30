@@ -213,7 +213,13 @@ def test_image_magic_byte_rejection(client: TestClient):
 
 def test_valid_image_magic_byte_acceptance(client: TestClient):
     """Verify valid JPEG file with correct magic bytes is accepted."""
-    img = Image.new("RGB", (100, 100), color=(200, 180, 50))
+    import numpy as np
+    arr = np.zeros((100, 100, 3), dtype=np.uint8)
+    np.random.seed(42)
+    arr[:, :, 0] = np.random.randint(180, 225, (100, 100))
+    arr[:, :, 1] = np.random.randint(150, 195, (100, 100))
+    arr[:, :, 2] = np.random.randint(50, 95, (100, 100))
+    img = Image.fromarray(arr)
     buf = io.BytesIO()
     img.save(buf, format="JPEG")
     valid_bytes = buf.getvalue()
