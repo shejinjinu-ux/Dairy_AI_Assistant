@@ -131,6 +131,12 @@ class ChatOrchestratorService:
             analysis_records=latest_analysis_records
         )
 
+        extracted_metadata["provider"] = ai_service.last_provider
+        if ai_service.last_model_used:
+            extracted_metadata["ai_model"] = ai_service.last_model_used
+        if ai_service.last_error:
+            extracted_metadata["fallback_reason"] = ai_service.last_error
+
         # 7. Record interaction in session history
         session_service.record_interaction(
             session_id=session.id,

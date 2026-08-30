@@ -71,6 +71,46 @@ class InvalidInputDataError(AppBaseException):
         )
 
 
+class InvalidPhoneNumberError(AppBaseException):
+    """Raised when a supplied phone number fails validation or normalization."""
+    def __init__(self, detail: str, phone: Optional[str] = None):
+        super().__init__(
+            message=f"Invalid phone number: {detail}",
+            status_code=status.HTTP_400_BAD_REQUEST,
+            details={"error": detail, "phone": phone}
+        )
+
+
+class OTPVerificationError(AppBaseException):
+    """Raised when an OTP verification attempt fails, expires, or is rejected."""
+    def __init__(self, detail: str, phone: Optional[str] = None):
+        super().__init__(
+            message=detail,
+            status_code=status.HTTP_400_BAD_REQUEST,
+            details={"error": detail, "phone": phone}
+        )
+
+
+class OTPRateLimitError(AppBaseException):
+    """Raised when OTP send or verification requests exceed allowed rate limits or cooldown."""
+    def __init__(self, detail: str, retry_after: int = 60, phone: Optional[str] = None):
+        super().__init__(
+            message=detail,
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            details={"error": detail, "retry_after_seconds": retry_after, "phone": phone}
+        )
+
+
+class OTPProviderError(AppBaseException):
+    """Raised when the SMS/Fast2SMS OTP provider fails or is unconfigured."""
+    def __init__(self, detail: str, provider: str = "fast2sms"):
+        super().__init__(
+            message=f"SMS OTP service error: {detail}",
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            details={"error": detail, "provider": provider}
+        )
+
+
 def register_exception_handlers(app: FastAPI) -> None:
     """Register uniform custom exception handlers on FastAPI application."""
 

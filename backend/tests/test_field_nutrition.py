@@ -13,8 +13,17 @@ from backend.app.schemas.chat import ChatRequest
 from backend.app.services.nutrition_engine import nutrition_engine
 from backend.app.services.chat.nutrition_service import nutrition_service
 from backend.app.services.chat.chat_service import chat_service
+from unittest.mock import patch
+from backend.config import settings
 
 client = TestClient(app)
+
+
+@pytest.fixture(autouse=True)
+def default_local_ai_settings():
+    """Ensure baseline nutrition chat tests use local provider by default, preventing live network calls."""
+    with patch.object(settings, "AI_PROVIDER", "local"), patch.object(settings, "AI_API_KEY", None):
+        yield
 
 
 # ==============================================================================

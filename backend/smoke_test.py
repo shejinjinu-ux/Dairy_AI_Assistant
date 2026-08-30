@@ -424,6 +424,63 @@ def run_smoke_tests():
         f"(Status: {data_comb_silage.get('status')}, Quality Score: {data_comb_silage.get('quality_score')})"
     )
 
+    # 15. Testing Real SMS OTP Authentication Endpoints (Fast2SMS Architecture)
+    print("\n15. Testing Real SMS OTP Authentication Endpoints...")
+    from unittest.mock import AsyncMock, patch
+    import httpx
+    from backend.app.services.fast2sms_service import secure_otp_store, otp_rate_limiter
+
+    otp_rate_limiter.reset()
+    secure_otp_store.reset()
+
+    mock_send_res = httpx.Response(
+        status_code=200,
+        json={"return": True, "request_id": "req_smoke_001", "message": ["SMS sent successfully"]},
+        request=httpx.Request("POST", "https://www.fast2sms.com/dev/bulkV2")
+    )
+
+    with patch.object(settings, "FAST2SMS_API_KEY", "mock_smoke_api_key"), \
+         patch("httpx.AsyncClient.post", new_callable=AsyncMock, return_value=mock_send_res):
+
+        # 15a. Send OTP
+        res_send = client.post("/api/v1/auth/send-otp", json={"phone": "9876543210"})
+        data_send = res_send.json()
+        check(
+            "POST /api/v1/auth/send-otp (Indian Normalization)",
+            res_send.status_code == 200 and data_send.get("phone") == "+919876543210" and "otp" not in data_send,
+            f"(Normalized Phone: {data_send.get('phone')}, Status: {data_send.get('status')}, Cooldown: {data_send.get('cooldown_seconds')}s)"
+        )
+
+        # Get generated OTP from secure store for valid verification test
+        stored_record = secure_otp_store._records.get("+919876543210")
+
+    # Generate known OTP for verification test
+    known_otp = secure_otp_store.generate_and_store_otp("+919876543210", expiry_seconds=300)
+
+    # 15b. Verify OTP
+    res_ver = client.post("/api/v1/auth/verify-otp", json={"phone": "+919876543210", "otp": known_otp})
+    data_ver = res_ver.json()
+    check(
+        "POST /api/v1/auth/verify-otp (Approval Verification)",
+        res_ver.status_code == 200 and data_ver.get("verified") is True and "otp" not in data_ver,
+        f"(User ID: {data_ver.get('user_id')}, Verified: {data_ver.get('verified')})"
+    )
+
+    # 15c. Rejection Tests
+    res_inv_phone = client.post("/api/v1/auth/send-otp", json={"phone": "1234567890"})
+    check(
+        "POST /api/v1/auth/send-otp (Reject Invalid Indian Prefix)",
+        res_inv_phone.status_code == 400 and res_inv_phone.json().get("error_type") == "InvalidPhoneNumberError",
+        f"(Status: {res_inv_phone.status_code}, Error: {res_inv_phone.json().get('error_type')})"
+    )
+
+    res_inv_otp = client.post("/api/v1/auth/verify-otp", json={"phone": "+919876543210", "otp": "invalid_alpha"})
+    check(
+        "POST /api/v1/auth/verify-otp (Reject Malformed OTP)",
+        res_inv_otp.status_code == 422,
+        f"(Status: {res_inv_otp.status_code})"
+    )
+
     print("\n" + "=" * 80)
     print(f"SMOKE TEST SUMMARY: {passed} PASSED, {failed} FAILED")
     print("=" * 80)

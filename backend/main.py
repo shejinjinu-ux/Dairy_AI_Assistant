@@ -14,6 +14,7 @@ from backend.app.services.model_loader import model_loader
 from backend.app.api.v1.router import api_router
 from backend.app.api.v1.endpoints.chat import router as chat_router
 from backend.app.api.v1.endpoints.nutrition import router as nutrition_router
+from backend.app.api.v1.endpoints.auth import router as auth_router
 from backend.app.schemas.health import HealthResponse
 from backend.app.core.registry import registry_manager
 
@@ -72,9 +73,10 @@ def create_application() -> FastAPI:
     # Include Main API v1 Router
     app.include_router(api_router, prefix=settings.API_V1_STR)
 
-    # Mount /api/chat and /api/nutrition directly for backward compatibility and direct route access
+    # Mount /api/chat, /api/nutrition, and /api/auth directly for backward compatibility and direct route access
     app.include_router(chat_router, prefix="/api", include_in_schema=False)
     app.include_router(nutrition_router, prefix="/api", include_in_schema=False)
+    app.include_router(auth_router, prefix="/api", include_in_schema=False)
 
 
     # Root Direct Health Endpoints

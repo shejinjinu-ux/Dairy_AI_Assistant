@@ -93,10 +93,11 @@ class Settings(BaseSettings):
     CHAT_MAX_HISTORY_MESSAGES: int = 10
     AI_PROVIDER: str = "local"  # "local", "gemini", "openai"
     AI_API_KEY: str | None = None
-    AI_MODEL: str | None = None
+    AI_MODEL: str | None = "gemini-3.5-flash"
+    GEMINI_API_KEY: str | None = None
     TRANSLATION_API_KEY: str | None = None
 
-    # Supabase / Database Configuration (Persistent storage)
+    # Supabase Persistent Cloud Database Configuration
     SUPABASE_URL: str | None = None
     SUPABASE_KEY: str | None = None
     SUPABASE_SERVICE_ROLE_KEY: str | None = None
@@ -105,6 +106,42 @@ class Settings(BaseSettings):
     SUPABASE_ANON_KEY: str | None = None
     SUPABASE_PUBLISHABLE_KEY: str | None = None
     SUPABASE_PUBLIC_KEY: str | None = None
+
+    # Fast2SMS OTP Authentication Configuration
+    FAST2SMS_API_KEY: str | None = None
+    OTP_EXPIRY_SECONDS: int = 300  # 5 minutes validity
+    OTP_COOLDOWN_SECONDS: int = 60  # 60 seconds resend cooldown
+    OTP_MAX_SENDS_PER_WINDOW: int = 5  # Max 5 sends per 15 minutes
+    OTP_WINDOW_SECONDS: int = 900  # 15 minutes window
+
+    @property
+    def effective_ai_api_key(self) -> str | None:
+        """Resolve effective AI / Gemini API key from AI_API_KEY or GEMINI_API_KEY."""
+        for candidate in [self.AI_API_KEY, self.GEMINI_API_KEY]:
+            if candidate and str(candidate).strip():
+                return str(candidate).strip()
+        return None
+
+    @property
+    def effective_ai_model(self) -> str:
+        """Resolve AI model name, defaulting to gemini-3.5-flash."""
+        if self.AI_MODEL and str(self.AI_MODEL).strip():
+            return str(self.AI_MODEL).strip()
+        return "gemini-3.5-flash"
+
+    @property
+    def is_gemini_configured(self) -> bool:
+        """Returns True if Gemini provider and API key are configured."""
+        provider = (self.AI_PROVIDER or "").lower().strip()
+        return bool(
+            (provider in ["gemini", "google"] or (self.effective_ai_api_key and provider != "local"))
+            and self.effective_ai_api_key
+        )
+
+    @property
+    def is_fast2sms_configured(self) -> bool:
+        """Returns True if Fast2SMS API key is configured."""
+        return bool(self.FAST2SMS_API_KEY and str(self.FAST2SMS_API_KEY).strip())
 
     @property
     def effective_supabase_url(self) -> str | None:

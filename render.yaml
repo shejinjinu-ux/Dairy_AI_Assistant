@@ -27,5 +27,11 @@ services:
         sync: false
       - key: SUPABASE_SERVICE_ROLE_KEY
         sync: false
+      - key: FAST2SMS_API_KEY
+        sync: false
       - key: AI_PROVIDER
-        value: "local"
+        value: "gemini"
+      - key: AI_API_KEY
+        sync: false
+      - key: AI_MODEL
+        value: "gemini-3.5-flash"
