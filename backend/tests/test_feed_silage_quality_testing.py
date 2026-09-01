@@ -869,3 +869,61 @@ def test_24_human_portrait_rejected_on_silage_case_h():
     assert data["error_type"] == "INVALID_IMAGE"
     assert data["classification"] == "NOT_FEED_OR_SILAGE"
     assert data["predicted_class"] is None
+
+
+def test_25_authenticated_feed_and_silage_history_persistence():
+    """Verify that analyze/feed and analyze/silage persist records and GET /analyze/history retrieves them with user isolation."""
+    from backend.app.core.ownership_guard import auth_session_store
+    auth_session_store.register_session("sess_user_a_token", "farmer_user_a")
+    auth_session_store.register_session("sess_user_b_token", "farmer_user_b")
+
+    user_a_headers = {
+        "Authorization": "Bearer sess_user_a_token",
+        "X-User-ID": "farmer_user_a"
+    }
+    user_b_headers = {
+        "Authorization": "Bearer sess_user_b_token",
+        "X-User-ID": "farmer_user_b"
+    }
+
+    # 1. Unauthenticated GET /history should return 401
+    unauth_res = client.get("/api/v1/analyze/history")
+    assert unauth_res.status_code == 401
+
+    # 2. User A runs feed analysis
+    feed_res = client.post(
+        "/api/v1/analyze/feed",
+        data={"feed_name": "Maize", "quantity_kg": "2.5"},
+        headers=user_a_headers
+    )
+    assert feed_res.status_code == 200
+    feed_data = feed_res.json()
+    assert feed_data["record_id"] is not None
+    assert feed_data["persisted_at"] is not None
+
+    # 3. User A runs silage analysis
+    silage_res = client.post(
+        "/api/v1/analyze/silage",
+        data={"pH": "3.9", "dm_s": "34.0"},
+        headers=user_a_headers
+    )
+    assert silage_res.status_code == 200
+    silage_data = silage_res.json()
+    assert silage_data["record_id"] is not None
+
+    # 4. User A retrieves history
+    hist_a_res = client.get("/api/v1/analyze/history", headers=user_a_headers)
+    assert hist_a_res.status_code == 200
+    hist_a = hist_a_res.json()
+    assert len(hist_a) >= 2
+    record_ids_a = [r["record_id"] for r in hist_a]
+    assert feed_data["record_id"] in record_ids_a
+    assert silage_data["record_id"] in record_ids_a
+
+    # 5. User B retrieves history - must NOT see User A's records
+    hist_b_res = client.get("/api/v1/analyze/history", headers=user_b_headers)
+    assert hist_b_res.status_code == 200
+    hist_b = hist_b_res.json()
+    record_ids_b = [r["record_id"] for r in hist_b]
+    assert feed_data["record_id"] not in record_ids_b
+    assert silage_data["record_id"] not in record_ids_b

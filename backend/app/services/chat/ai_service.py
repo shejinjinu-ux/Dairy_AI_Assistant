@@ -1,6 +1,7 @@
 """
 AI Response Generation & LLM Provider Abstraction Service
-Combines high-precision built-in domain intelligence with dynamic Google Gemini API integration
+Combines high-precision built-in domain intelligence with dynamic Google Gemini API integration.
+Injects authorized persistent cattle Tag ID context (profile, lactation, milk history, vaccinations).
 """
 
 import re
@@ -79,25 +80,30 @@ class AIService:
         silage_data: Optional[Dict[str, Any]] = None,
         nutrition_data: Optional[RationRecommendationResult] = None,
         selected_cattle: Optional[Any] = None,
+        milk_history: Optional[List[Any]] = None,
+        vaccination_data: Optional[List[Any]] = None,
+        lactation_data: Optional[Any] = None,
         analysis_records: Optional[List[Any]] = None
     ) -> str:
         """
         Generates farmer-friendly response in the target language.
         Prioritizes authorized selected cattle context and persistent analysis records.
-        When Gemini is configured (AI_PROVIDER='gemini' and API key present), queries are dynamically
-        answered by Gemini with multi-turn conversation memory and veterinary guidance.
-        When local provider is active, routes through localized rule-based domain intelligence.
         """
         self.last_error = None
 
-        # 1. Specialized Calculation Results (When actual numeric model evaluations were produced)
+        # Build formatted cattle context string if a specific cow is authorized
+        cattle_context_str = self._build_cattle_context_string(
+            selected_cattle, milk_history, vaccination_data, lactation_data, analysis_records
+        )
+
+        # 1. Specialized Calculation Results
         # 1a. Silage Model Calculation Output
         if (intent == "silage_quality" or module == "silage") and silage_data:
             self.last_provider = "domain_silage"
             self.last_model_used = None
             fqi_val = silage_data.get("fermentation_quality_index", {}).get("predicted_fqi", 0.0)
             quality_cls = silage_data.get("quality_classification", {}).get("predicted_class", "ea")
-            
+
             if fqi_val >= 75 or quality_cls == "ea":
                 base_reply = get_localized_response("silage_quality", target_language, "silage_good")
                 return f"{base_reply} (FQI Score: {fqi_val}/100)"
@@ -127,7 +133,8 @@ class AIService:
                     language=target_language,
                     history=conversation_history,
                     intent=intent,
-                    module=module
+                    module=module,
+                    cattle_context=cattle_context_str
                 )
                 if gemini_reply and len(gemini_reply.strip()) > 0:
                     self.last_provider = "gemini"
@@ -147,8 +154,71 @@ class AIService:
             target_language=target_language,
             intent=intent,
             module=module,
-            nutrition_data=nutrition_data
+            nutrition_data=nutrition_data,
+            selected_cattle=selected_cattle,
+            milk_history=milk_history,
+            vaccination_data=vaccination_data,
+            lactation_data=lactation_data
         )
+
+    def _build_cattle_context_string(
+        self,
+        cattle: Optional[Any],
+        milk_history: Optional[List[Any]],
+        vaccination_data: Optional[List[Any]],
+        lactation_data: Optional[Any],
+        analysis_records: Optional[List[Any]]
+    ) -> Optional[str]:
+        """Constructs a concise, factual context block for an authorized cattle record."""
+        if not cattle:
+            return None
+
+        lines = [
+            f"--- AUTHORIZED CATTLE DATABASE RECORD ---",
+            f"Tag ID: {cattle.tag_id}",
+            f"Name: {cattle.name or 'N/A'}",
+            f"Species: {cattle.species} | Breed: {cattle.breed} | Gender: {cattle.gender}",
+            f"Age: {cattle.age_months or 'N/A'} months | Weight: {cattle.body_weight_kg} kg",
+        ]
+
+        if lactation_data:
+            lines.append(
+                f"Lactation: Stage: {lactation_data.lactation_stage} | Days in Milk (DIM): {lactation_data.days_in_milk or 'N/A'} | Status: {lactation_data.current_status} | Calving Date: {lactation_data.calving_date or 'N/A'} | Parity: {lactation_data.parity}"
+            )
+        else:
+            lines.append(
+                f"Lactation: Stage: {cattle.lactation_stage or 'N/A'} | DIM: {cattle.days_in_milk or 'N/A'} | Calving Date: {cattle.calving_date or 'N/A'}"
+            )
+
+        lines.append(f"Current Daily Milk Yield: {cattle.daily_milk_yield_litres} L/day | Fat: {cattle.milk_fat_percentage}%")
+
+        if milk_history:
+            lines.append("Recent Persistent Milk Production History:")
+            for r in milk_history[:7]:
+                m_vol = getattr(r, "morning_yield_litres", 0.0)
+                e_vol = getattr(r, "evening_yield_litres", 0.0)
+                t_vol = getattr(r, "total_yield_litres", 0.0)
+                lines.append(f"  • {r.date}: Morning {m_vol} L + Evening {e_vol} L = Total {t_vol} L")
+
+        if vaccination_data:
+            lines.append("Vaccination Schedule & Status:")
+            for v in vaccination_data[:5]:
+                d_target = getattr(v, "disease_target", "")
+                v_name = getattr(v, "recommended_vaccine", getattr(v, "vaccine_name", ""))
+                due_dt = getattr(v, "next_due_date", "")
+                stat = getattr(v, "status", "")
+                cost = getattr(v, "estimated_cost_display", "")
+                lines.append(f"  • {d_target} ({v_name}): Status {stat}, Next Due: {due_dt}, Est Cost: {cost}")
+
+        if analysis_records:
+            lines.append("Recent Quality & Disease Screenings:")
+            for a in analysis_records[:3]:
+                a_type = getattr(a, "analysis_type", "")
+                status_val = getattr(a, "summary_status", "")
+                lines.append(f"  • {a_type.capitalize()} Analysis: Status {status_val}")
+
+        lines.append("--- END OF RECORD (STRICTLY USE THESE REAL RECORDS; DO NOT INVENT NUMBERS) ---")
+        return "\n".join(lines)
 
     def _call_gemini(
         self,
@@ -156,7 +226,8 @@ class AIService:
         language: str,
         history: Optional[List[Dict[str, Any]]] = None,
         intent: Optional[str] = None,
-        module: Optional[str] = None
+        module: Optional[str] = None,
+        cattle_context: Optional[str] = None
     ) -> Optional[str]:
         """
         Calls Google Gemini REST API with structured conversation history,
@@ -168,24 +239,34 @@ class AIService:
 
         lang_name = LANGUAGE_NAMES.get(language, language)
 
-        # Context-aware system prompt
-        system_instruction = (
-            "You are Dairy Nova AI, an intelligent, helpful, and polite AI assistant for dairy farming and general knowledge in India.\n"
-            "Core Guidelines:\n"
-            f"1. Respond concisely, warmly, and helpfully in {lang_name} (language code: '{language}').\n"
-            "2. For general or non-dairy queries (e.g. computer science, networking, coding, general science, geography, history, everyday conversation), "
-            "answer directly, accurately, and naturally without forcing dairy context.\n"
-            "3. For dairy farming, cattle care, bovine breeds, feed nutrition, silage, and milk production, provide practical, "
-            "scientifically sound advice aligned with Indian dairy management and ICAR benchmarks.\n"
-            "4. For cattle disease or health issues, provide informational guidance while advising the farmer to consult a local veterinarian for sick animals.\n"
-            "5. Preserve all numeric quantities, units (kg, litres, %, etc.), and clear concise bullet points where appropriate."
-        )
+        system_instruction_parts = [
+            "You are Dairy Nova AI, an intelligent, helpful, and polite AI assistant for dairy farming and general knowledge in India.\n",
+            "Core Guidelines:\n",
+            f"1. Respond concisely, warmly, and helpfully in {lang_name} (language code: '{language}').\n",
+            "2. For general or non-dairy queries (e.g. computer science, networking, coding, general science, geography, history, everyday conversation), ",
+            "answer directly, accurately, and naturally without forcing dairy context.\n",
+            "3. For dairy farming, cattle care, bovine breeds, feed nutrition, silage, lactation, and milk production, provide practical, ",
+            "scientifically sound advice aligned with Indian dairy management and ICAR benchmarks.\n",
+            "4. For cattle disease or health issues, provide informational guidance while advising the farmer to consult a local veterinarian for clinical decisions.\n",
+            "5. Preserve all numeric quantities, units (kg, litres, %, etc.), and clear concise bullet points where appropriate.\n",
+            "6. Note: Cattle body temperature is not used in this system—do NOT ask for or require body temperature.\n",
+            "7. For vaccine pricing, note that key vaccines like FMD and Brucellosis are provided 100% FREE (₹0 farmer cost) under the National Animal Disease Control Programme (NADCP); for other vaccines, cite government procurement or state subsidy availability and advise checking local veterinary dispensary for exact local spot rates. Do not invent arbitrary prices.\n"
+        ]
+
+        if cattle_context:
+            system_instruction_parts.extend([
+                "\nAUTHORIZED CATTLE DATABASE RECORD:\n",
+                cattle_context,
+                "\nIMPORTANT: When answering questions about this specific cow (such as milk yield, lactation stage, DIM, vaccinations, or history), ",
+                "answer strictly using the exact numbers and dates provided in the database record above. Do NOT hallucinate or invent records.\n"
+            ])
+
+        system_instruction = "".join(system_instruction_parts)
 
         # Build multi-turn message contents
         contents: List[Dict[str, Any]] = []
 
         if history:
-            # Include up to the last 6 messages to preserve conversational continuity
             for msg in history[-6:]:
                 role = "user" if msg.get("role") == "user" else "model"
                 text = msg.get("message", "")
@@ -231,12 +312,10 @@ class AIService:
                             return parts[0]["text"].strip()
                     logger.warning(f"Gemini returned empty candidates for model '{model_to_try}': {data}")
                 elif res.status_code == 404:
-                    # Model not found or sunset; try next fallback model candidate
                     logger.info(f"Gemini model '{model_to_try}' returned 404 NOT_FOUND. Trying next candidate...")
                     continue
                 else:
                     logger.warning(f"Gemini API returned status code {res.status_code} for model '{model_to_try}'.")
-                    # If rate limited or service error, try another flash candidate
                     continue
             except httpx.TimeoutException:
                 logger.warning(f"Gemini API request timed out after 15.0s for model '{model_to_try}'.")
@@ -313,7 +392,7 @@ class AIService:
                         dm = ref_res.total_for_quantity.dry_matter_g
                         cp = ref_res.total_for_quantity.crude_protein_g
                         me = ref_res.total_for_quantity.energy_mj
-                        
+
                         if target_language == "ta":
                             return f"{fname} ({qty} கிலோ): உலர் பொருள் {dm} கி, கச்சா புரதம் {cp} கி, ஆற்றல் {me} MJ (ICAR-NIANP தரவு)."
                         elif target_language == "hi":
@@ -328,9 +407,19 @@ class AIService:
         target_language: str,
         intent: str,
         module: str,
-        nutrition_data: Optional[RationRecommendationResult] = None
+        nutrition_data: Optional[RationRecommendationResult] = None,
+        selected_cattle: Optional[Any] = None,
+        milk_history: Optional[List[Any]] = None,
+        vaccination_data: Optional[List[Any]] = None,
+        lactation_data: Optional[Any] = None
     ) -> str:
         """Local domain knowledge base fallback."""
+        # A. If user asked about a specific cattle Tag ID
+        if selected_cattle:
+            return self._format_local_cattle_profile(
+                selected_cattle, milk_history, vaccination_data, lactation_data, target_language
+            )
+
         if intent == "silage_quality" or module == "silage":
             return get_localized_response("silage_quality", target_language, "silage_missing")
 
@@ -362,6 +451,69 @@ class AIService:
             return get_localized_response(intent, target_language)
 
         return get_localized_response("unknown", target_language)
+
+    def _format_local_cattle_profile(
+        self,
+        cattle: Any,
+        milk_history: Optional[List[Any]],
+        vaccination_data: Optional[List[Any]],
+        lactation_data: Optional[Any],
+        language: str
+    ) -> str:
+        """Formats cattle details, milk history, and vaccination status locally."""
+        t_id = cattle.tag_id
+        breed = cattle.breed
+        stage = getattr(lactation_data, "lactation_stage", cattle.lactation_stage or "Mid")
+        dim = getattr(lactation_data, "days_in_milk", cattle.days_in_milk)
+        yield_l = cattle.daily_milk_yield_litres
+
+        if language == "ta":
+            lines = [
+                f"மாடு விவரம் (Tag ID: {t_id}):",
+                f"• இனம்: {breed} | எடை: {cattle.body_weight_kg} kg",
+                f"• கறவை நிலை: {stage} (DIM: {dim or 'N/A'} நாட்கள்)",
+                f"• தினசரி பால் உற்பத்தி: {yield_l} லிட்டர்/நாள் (கொழுப்பு: {cattle.milk_fat_percentage}%)"
+            ]
+            if milk_history:
+                lines.append("சமீபத்திய பால் வரலாறு:")
+                for r in milk_history[:3]:
+                    lines.append(f"  - {r.date}: {r.total_yield_litres} L (காலை: {r.morning_yield_litres}L, மாலை: {r.evening_yield_litres}L)")
+            if vaccination_data:
+                lines.append("தடுப்பூசி பரிந்துரை:")
+                for v in vaccination_data[:2]:
+                    lines.append(f"  - {v.disease_target}: {v.recommended_vaccine} (அடுத்த தவணை: {v.next_due_date})")
+        elif language == "hi":
+            lines = [
+                f"पशु विवरण (Tag ID: {t_id}):",
+                f"• नस्ल: {breed} | वजन: {cattle.body_weight_kg} kg",
+                f"• दुग्धकाल अवस्था: {stage} (DIM: {dim or 'N/A'} दिन)",
+                f"• दैनिक दूध उत्पादन: {yield_l} लीटर/दिन (फैट: {cattle.milk_fat_percentage}%)"
+            ]
+            if milk_history:
+                lines.append("हाल का दूध उत्पादन इतिहास:")
+                for r in milk_history[:3]:
+                    lines.append(f"  - {r.date}: {r.total_yield_litres} L (सुबह: {r.morning_yield_litres}L, शाम: {r.evening_yield_litres}L)")
+            if vaccination_data:
+                lines.append("टीकाकरण स्थिति:")
+                for v in vaccination_data[:2]:
+                    lines.append(f"  - {v.disease_target}: {v.recommended_vaccine} (अगली देय तिथि: {v.next_due_date})")
+        else:
+            lines = [
+                f"Cattle Profile (Tag ID: {t_id}):",
+                f"• Breed: {breed} | Body Weight: {cattle.body_weight_kg} kg",
+                f"• Lactation Stage: {stage} (Days in Milk: {dim or 'N/A'})",
+                f"• Current Daily Milk Yield: {yield_l} L/day (Fat: {cattle.milk_fat_percentage}%)"
+            ]
+            if milk_history:
+                lines.append("Recent Milk History:")
+                for r in milk_history[:3]:
+                    lines.append(f"  - {r.date}: {r.total_yield_litres} L (Morning {r.morning_yield_litres} L, Evening {r.evening_yield_litres} L)")
+            if vaccination_data:
+                lines.append("Vaccination Schedule:")
+                for v in vaccination_data[:2]:
+                    lines.append(f"  - {v.disease_target}: {v.recommended_vaccine} (Next Due: {v.next_due_date}, Cost: {v.estimated_cost_display})")
+
+        return "\n".join(lines)
 
 
 ai_service = AIService()

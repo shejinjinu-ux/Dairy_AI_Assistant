@@ -232,3 +232,201 @@ def test_valid_image_magic_byte_acceptance(client: TestClient):
     assert res.status_code == 200
     assert res.json()["visual_screening"] is not None
     assert res.json()["visual_screening"]["predicted_class"] == "GOOD"
+
+
+# ==============================================================================
+# 7. AUTHORITATIVE SESSION AUTHENTICATION & ANTI-SPOOFING SECURITY (CASES A-G)
+# ==============================================================================
+
+def test_case_a_valid_session_matching_user(client: TestClient):
+    """Case A: Valid session + matching user -> PASS."""
+    from backend.app.core.ownership_guard import auth_session_store
+    session_id = "sess_valid_auth_01"
+    user_id = "farmer_auth_01"
+    auth_session_store.register_session(session_id, user_id)
+
+    # Register cow under user_id
+    repo = get_farm_cattle_repository()
+    repo.save_cattle(Cattle(
+        animal_id="COW_AUTH_01",
+        tag_id="COW_AUTH_01",
+        farm_id="farm_auth_01",
+        user_id=user_id,
+        daily_milk_yield_litres=18.0
+    ))
+
+    # Request with valid session and matching X-User-ID
+    headers = {
+        "Authorization": f"Bearer {session_id}",
+        "X-User-ID": user_id
+    }
+    res = client.get("/api/v1/cattle/COW_AUTH_01", headers=headers)
+    assert res.status_code == 200
+    assert res.json()["tag_id"] == "COW_AUTH_01"
+
+
+def test_case_b_valid_session_wrong_x_user_id_spoofing_rejected(client: TestClient):
+    """Case B: Valid session + wrong X-User-ID -> 403 Forbidden (MUST NOT switch identity)."""
+    from backend.app.core.ownership_guard import auth_session_store
+    session_id = "sess_alice_valid_02"
+    user_id = "farmer_alice_02"
+    auth_session_store.register_session(session_id, user_id)
+
+    # Alice passes her session but claims X-User-ID: usr_bob_202 (spoofing attempt)
+    headers = {
+        "Authorization": f"Bearer {session_id}",
+        "X-User-ID": "usr_bob_202"
+    }
+    res = client.get("/api/v1/cattle", headers=headers)
+    assert res.status_code == 403
+    assert "Security violation" in res.json()["detail"] or "does not match" in res.json()["detail"]
+
+
+def test_case_c_invalid_session_valid_looking_x_user_id_rejected(client: TestClient):
+    """Case C: Invalid session + valid-looking X-User-ID -> 401 Unauthorized."""
+    headers = {
+        "Authorization": "Bearer sess_unregistered_bogus_token",
+        "X-User-ID": "usr_alice_101"
+    }
+    res = client.get("/api/v1/cattle", headers=headers)
+    assert res.status_code == 401
+    assert "Authentication required" in res.json()["detail"] or "invalid" in res.json()["detail"].lower()
+
+
+def test_case_d_no_authorization_valid_looking_x_user_id_rejected(client: TestClient):
+    """Case D: No Authorization header + valid-looking X-User-ID -> 401 Unauthorized."""
+    headers = {
+        "X-User-ID": "usr_alice_101"
+    }
+    res = client.get("/api/v1/cattle", headers=headers)
+    assert res.status_code == 401
+    assert "Authentication required" in res.json()["detail"]
+
+
+def test_case_e_user_a_session_accessing_user_b_cattle_rejected(client: TestClient):
+    """Case E: User A valid session accessing User B cattle -> 404 / 403."""
+    from backend.app.core.ownership_guard import auth_session_store
+    session_a = "sess_user_a_isolated"
+    user_a = "usr_alice_101"
+    auth_session_store.register_session(session_a, user_a)
+
+    headers = {"Authorization": f"Bearer {session_a}"}
+    # Alice attempts to access Bob's cow (COW_BOB_01)
+    res = client.get("/api/v1/cattle/COW_BOB_01", headers=headers)
+    assert res.status_code == 404
+
+
+def test_case_f_user_a_session_asking_ai_about_user_b_tag_id(client: TestClient):
+    """Case F: User A session asking AI about User B Tag ID -> Clear not-found message, zero leakage."""
+    from backend.app.core.ownership_guard import auth_session_store
+    session_a = "sess_user_a_chat_iso"
+    user_a = "usr_alice_101"
+    auth_session_store.register_session(session_a, user_a)
+
+    # Bob has COW_BOB_01 registered
+    headers = {"Authorization": f"Bearer {session_a}"}
+    res = client.post(
+        "/api/v1/chat",
+        json={"message": "Tell me about COW_BOB_01", "language": "en"},
+        headers=headers
+    )
+    assert res.status_code == 200
+    data = res.json()
+    assert data["success"] is True
+    assert "couldn't find a cattle record" in data["reply"].lower()
+    # Confirm Bob's breed 'Murrah' is NOT leaked to Alice
+    assert "Murrah" not in data["reply"]
+
+
+def test_case_g_valid_session_asking_about_own_tag_id(client: TestClient):
+    """Case G: Valid session asking about own Tag ID such as TAG-396 -> Resolves correctly."""
+    from backend.app.core.ownership_guard import auth_session_store
+    session_id = "sess_farmer_tag396"
+    user_id = "farmer_tag396_owner"
+    auth_session_store.register_session(session_id, user_id)
+
+    headers = {"Authorization": f"Bearer {session_id}"}
+    tag_id = "TAG-396"
+
+    # Register own cow
+    client.post(
+        "/api/v1/cattle",
+        json={
+            "tag_id": tag_id,
+            "name": "Kaveri",
+            "breed": "Jersey",
+            "daily_milk_yield_litres": 22.0,
+            "milk_fat_percentage": 4.1
+        },
+        headers=headers
+    )
+
+    # Ask AI about TAG-396
+    res = client.post(
+        "/api/v1/chat",
+        json={"message": "What is the status of TAG-396?", "language": "en"},
+        headers=headers
+    )
+    assert res.status_code == 200
+    data = res.json()
+    assert data["success"] is True
+    reply = data["reply"]
+    assert "TAG-396" in reply or "Jersey" in reply or "22" in reply
+
+
+def test_all_endpoints_secure_authenticated_identity(client: TestClient):
+    """Verifies all required endpoints securely enforce authenticated identity."""
+    from backend.app.core.ownership_guard import auth_session_store
+    session_id = "sess_full_endpoint_test"
+    user_id = "farmer_full_endpoint_user"
+    auth_session_store.register_session(session_id, user_id)
+    headers = {"Authorization": f"Bearer {session_id}"}
+
+    # 1. POST /api/v1/cattle
+    cow_res = client.post(
+        "/api/v1/cattle",
+        json={"tag_id": "TAG-ENDP-01", "name": "Bhavani", "daily_milk_yield_litres": 15.0},
+        headers=headers
+    )
+    assert cow_res.status_code == 201
+
+    # 2. GET /api/v1/cattle
+    list_res = client.get("/api/v1/cattle", headers=headers)
+    assert list_res.status_code == 200
+    assert any(c["tag_id"] == "TAG-ENDP-01" for c in list_res.json())
+
+    # 3. GET /api/v1/cattle/{tag_id}
+    get_res = client.get("/api/v1/cattle/TAG-ENDP-01", headers=headers)
+    assert get_res.status_code == 200
+    assert get_res.json()["name"] == "Bhavani"
+
+    # 4. POST /api/v1/cattle/{tag_id}/milk
+    milk_post = client.post(
+        "/api/v1/cattle/TAG-ENDP-01/milk",
+        json={"morning_yield_litres": 8.0, "evening_yield_litres": 7.0},
+        headers=headers
+    )
+    assert milk_post.status_code == 201
+
+    # 5. GET /api/v1/cattle/{tag_id}/milk-history
+    milk_hist = client.get("/api/v1/cattle/TAG-ENDP-01/milk-history", headers=headers)
+    assert milk_hist.status_code == 200
+    assert milk_hist.json()["total_records"] == 1
+
+    # 6. GET /api/v1/cattle/{tag_id}/vaccinations
+    vac_res = client.get("/api/v1/cattle/TAG-ENDP-01/vaccinations", headers=headers)
+    assert vac_res.status_code == 200
+    assert len(vac_res.json()) >= 4
+
+    # 7. GET /api/v1/analyze/history
+    hist_res = client.get("/api/v1/analyze/history", headers=headers)
+    assert hist_res.status_code == 200
+
+    # 8. POST /api/v1/chat
+    chat_res = client.post(
+        "/api/v1/chat",
+        json={"message": "Tell me about TAG-ENDP-01", "language": "en"},
+        headers=headers
+    )
+    assert chat_res.status_code == 200
+    assert "TAG-ENDP-01" in chat_res.json()["reply"] or "15" in chat_res.json()["reply"]

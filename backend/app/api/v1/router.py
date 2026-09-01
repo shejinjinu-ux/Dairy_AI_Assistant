@@ -19,6 +19,7 @@ from backend.app.api.v1.endpoints import (
     chat,
     nutrition,
     auth,
+    cattle,
 )
 
 api_router = APIRouter()
@@ -39,3 +40,4 @@ api_router.include_router(lab_sensor.router)
 api_router.include_router(chat.router)
 api_router.include_router(nutrition.router)
 api_router.include_router(auth.router)
+api_router.include_router(cattle.router)

@@ -39,7 +39,13 @@ ANIMAL_KEYWORDS = [
     "dog", "cat", "cow", "ox", "bull", "calf", "bison", "water buffalo",
     "horse", "sheep", "goat", "ram", "pig", "boar", "donkey", "mule",
     "bird", "chicken", "rooster", "hen", "turkey", "duck", "goose",
-    "gazelle", "zebra", "elephant", "lion", "tiger", "bear", "monkey"
+    "gazelle", "zebra", "elephant", "lion", "tiger", "bear", "monkey",
+    "hound", "terrier", "retriever", "setter", "spaniel", "shepherd",
+    "mastiff", "dingo", "ridgeback", "pug", "poodle", "collie", "corgi",
+    "bulldog", "husky", "whippet", "greyhound", "basenji", "basset",
+    "beagle", "chihuahua", "rottweiler", "doberman", "boxer", "dalmatian",
+    "wolf", "fox", "coyote", "hyena", "deer", "elk", "moose", "llama", "alpaca",
+    "sorrel", "hartebeest", "impala", "bighorn", "antelope", "warthog", "hippopotamus"
 ]
 
 NON_FEED_OBJECT_KEYWORDS = [

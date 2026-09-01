@@ -1,9 +1,82 @@
 -- ====================================================================
--- Dairy AI Assistant - Supabase / PostgreSQL Production Schema for Chat
--- Idempotent, High-Performance, and RLS-Secured
+-- Dairy AI Assistant - Supabase / PostgreSQL Production Schema
+-- Global Tag ID Uniqueness, Persistent Milk History, Vaccinations, Chat & RLS
 -- ====================================================================
 
--- 1. Create chat_sessions table
+-- 1. Farms Table
+CREATE TABLE IF NOT EXISTS public.farms (
+    farm_id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    farm_name TEXT NOT NULL,
+    location TEXT,
+    is_demo BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- 2. Cattle Table (Globally Unique Tag ID)
+CREATE TABLE IF NOT EXISTS public.cattle (
+    animal_id TEXT PRIMARY KEY,
+    tag_id TEXT UNIQUE NOT NULL, -- Global Uniqueness Enforced
+    farm_id TEXT REFERENCES public.farms(farm_id) ON DELETE SET NULL,
+    user_id TEXT NOT NULL,
+    name TEXT,
+    species VARCHAR(30) NOT NULL DEFAULT 'Cattle',
+    breed VARCHAR(50) NOT NULL DEFAULT 'Crossbred',
+    gender VARCHAR(10) NOT NULL DEFAULT 'Female',
+    age_months NUMERIC(6, 2),
+    date_of_birth DATE,
+    body_weight_kg NUMERIC(6, 2) NOT NULL DEFAULT 400.0,
+    calving_date DATE,
+    lactation_start_date DATE,
+    parity INT NOT NULL DEFAULT 1,
+    current_lactation_status VARCHAR(20) NOT NULL DEFAULT 'Lactating',
+    days_in_milk NUMERIC(6, 2),
+    lactation_stage VARCHAR(20),
+    daily_milk_yield_litres NUMERIC(6, 2) NOT NULL DEFAULT 0.0,
+    milk_fat_percentage NUMERIC(4, 2) NOT NULL DEFAULT 4.0,
+    pregnancy_status BOOLEAN NOT NULL DEFAULT FALSE,
+    pregnancy_month INT,
+    is_demo BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- 3. Persistent Milk Records Table
+CREATE TABLE IF NOT EXISTS public.milk_records (
+    record_id TEXT PRIMARY KEY,
+    tag_id TEXT NOT NULL REFERENCES public.cattle(tag_id) ON DELETE CASCADE,
+    user_id TEXT NOT NULL,
+    farm_id TEXT,
+    date DATE NOT NULL,
+    morning_yield_litres NUMERIC(6, 2) NOT NULL DEFAULT 0.0,
+    evening_yield_litres NUMERIC(6, 2) NOT NULL DEFAULT 0.0,
+    total_yield_litres NUMERIC(6, 2) NOT NULL,
+    fat_percentage NUMERIC(4, 2),
+    snf_percentage NUMERIC(4, 2),
+    notes TEXT,
+    is_demo BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- 4. Persistent Vaccination Records Table
+CREATE TABLE IF NOT EXISTS public.vaccination_records (
+    record_id TEXT PRIMARY KEY,
+    tag_id TEXT NOT NULL REFERENCES public.cattle(tag_id) ON DELETE CASCADE,
+    user_id TEXT NOT NULL,
+    disease_target VARCHAR(50) NOT NULL,
+    vaccine_name TEXT NOT NULL,
+    administered_date DATE NOT NULL,
+    next_due_date DATE NOT NULL,
+    recommended_timing TEXT NOT NULL,
+    status VARCHAR(30) NOT NULL DEFAULT 'COMPLETED',
+    estimated_cost_inr NUMERIC(8, 2),
+    batch_number TEXT,
+    veterinarian_name TEXT,
+    notes TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- 5. Chat Sessions Table
 CREATE TABLE IF NOT EXISTS public.chat_sessions (
     id TEXT PRIMARY KEY,
     user_id TEXT,
@@ -12,7 +85,7 @@ CREATE TABLE IF NOT EXISTS public.chat_sessions (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- 2. Create chat_messages table
+-- 6. Chat Messages Table
 CREATE TABLE IF NOT EXISTS public.chat_messages (
     id TEXT PRIMARY KEY,
     session_id TEXT NOT NULL REFERENCES public.chat_sessions(id) ON DELETE CASCADE,
@@ -24,113 +97,32 @@ CREATE TABLE IF NOT EXISTS public.chat_messages (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- 3. Performance Indexes
+-- 7. Performance Indexes
+CREATE INDEX IF NOT EXISTS idx_cattle_tag_id ON public.cattle(tag_id);
+CREATE INDEX IF NOT EXISTS idx_cattle_user_id ON public.cattle(user_id);
+CREATE INDEX IF NOT EXISTS idx_milk_records_tag_id ON public.milk_records(tag_id);
+CREATE INDEX IF NOT EXISTS idx_milk_records_date ON public.milk_records(date DESC);
+CREATE INDEX IF NOT EXISTS idx_vaccination_records_tag_id ON public.vaccination_records(tag_id);
 CREATE INDEX IF NOT EXISTS idx_chat_messages_session_id ON public.chat_messages(session_id);
-CREATE INDEX IF NOT EXISTS idx_chat_messages_created_at ON public.chat_messages(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_chat_sessions_user_id ON public.chat_sessions(user_id);
-CREATE INDEX IF NOT EXISTS idx_chat_sessions_updated_at ON public.chat_sessions(updated_at DESC);
 
--- 4. Enable Row Level Security (RLS)
+-- 8. Row Level Security (RLS)
+ALTER TABLE public.farms ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.cattle ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.milk_records ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.vaccination_records ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.chat_sessions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.chat_messages ENABLE ROW LEVEL SECURITY;
 
--- 5. Row Level Security Policies for chat_sessions
--- Idempotent drop if exists
-DROP POLICY IF EXISTS "Service role has full access to chat_sessions" ON public.chat_sessions;
-DROP POLICY IF EXISTS "Users can read own chat sessions" ON public.chat_sessions;
-DROP POLICY IF EXISTS "Users can insert own chat sessions" ON public.chat_sessions;
-DROP POLICY IF EXISTS "Users can update own chat sessions" ON public.chat_sessions;
-DROP POLICY IF EXISTS "Users can delete own chat sessions" ON public.chat_sessions;
-
--- Allow service role full unrestricted access
-CREATE POLICY "Service role has full access to chat_sessions"
-    ON public.chat_sessions
-    FOR ALL
-    USING (auth.role() = 'service_role')
-    WITH CHECK (auth.role() = 'service_role');
-
--- Allow users / anon to read their own or anonymous sessions
-CREATE POLICY "Users can read own chat sessions"
-    ON public.chat_sessions
-    FOR SELECT
-    USING (auth.uid()::text = user_id OR user_id IS NULL);
-
--- Allow users / anon to insert sessions
-CREATE POLICY "Users can insert own chat sessions"
-    ON public.chat_sessions
-    FOR INSERT
+-- 9. Tenant Isolation Policies
+CREATE POLICY "Users can manage own cattle" ON public.cattle
+    FOR ALL USING (auth.uid()::text = user_id OR user_id IS NULL)
     WITH CHECK (auth.uid()::text = user_id OR user_id IS NULL);
 
--- Allow users / anon to update their own sessions
-CREATE POLICY "Users can update own chat sessions"
-    ON public.chat_sessions
-    FOR UPDATE
-    USING (auth.uid()::text = user_id OR user_id IS NULL)
+CREATE POLICY "Users can manage own milk records" ON public.milk_records
+    FOR ALL USING (auth.uid()::text = user_id OR user_id IS NULL)
     WITH CHECK (auth.uid()::text = user_id OR user_id IS NULL);
 
--- Allow users / anon to delete their own sessions
-CREATE POLICY "Users can delete own chat sessions"
-    ON public.chat_sessions
-    FOR DELETE
-    USING (auth.uid()::text = user_id OR user_id IS NULL);
-
-
--- 6. Row Level Security Policies for chat_messages
--- Idempotent drop if exists
-DROP POLICY IF EXISTS "Service role has full access to chat_messages" ON public.chat_messages;
-DROP POLICY IF EXISTS "Users can read messages for accessible sessions" ON public.chat_messages;
-DROP POLICY IF EXISTS "Users can insert messages into accessible sessions" ON public.chat_messages;
-DROP POLICY IF EXISTS "Users can update messages in accessible sessions" ON public.chat_messages;
-DROP POLICY IF EXISTS "Users can delete messages from accessible sessions" ON public.chat_messages;
-
--- Allow service role full unrestricted access
-CREATE POLICY "Service role has full access to chat_messages"
-    ON public.chat_messages
-    FOR ALL
-    USING (auth.role() = 'service_role')
-    WITH CHECK (auth.role() = 'service_role');
-
--- Allow users to read messages for sessions they own or anonymous sessions
-CREATE POLICY "Users can read messages for accessible sessions"
-    ON public.chat_messages
-    FOR SELECT
-    USING (EXISTS (
-        SELECT 1 FROM public.chat_sessions s
-        WHERE s.id = chat_messages.session_id
-        AND (s.user_id = auth.uid()::text OR s.user_id IS NULL)
-    ));
-
--- Allow users to insert messages into accessible sessions
-CREATE POLICY "Users can insert messages into accessible sessions"
-    ON public.chat_messages
-    FOR INSERT
-    WITH CHECK (EXISTS (
-        SELECT 1 FROM public.chat_sessions s
-        WHERE s.id = chat_messages.session_id
-        AND (s.user_id = auth.uid()::text OR s.user_id IS NULL)
-    ));
-
--- Allow users to update messages in accessible sessions
-CREATE POLICY "Users can update messages in accessible sessions"
-    ON public.chat_messages
-    FOR UPDATE
-    USING (EXISTS (
-        SELECT 1 FROM public.chat_sessions s
-        WHERE s.id = chat_messages.session_id
-        AND (s.user_id = auth.uid()::text OR s.user_id IS NULL)
-    ))
-    WITH CHECK (EXISTS (
-        SELECT 1 FROM public.chat_sessions s
-        WHERE s.id = chat_messages.session_id
-        AND (s.user_id = auth.uid()::text OR s.user_id IS NULL)
-    ));
-
--- Allow users to delete messages from accessible sessions
-CREATE POLICY "Users can delete messages from accessible sessions"
-    ON public.chat_messages
-    FOR DELETE
-    USING (EXISTS (
-        SELECT 1 FROM public.chat_sessions s
-        WHERE s.id = chat_messages.session_id
-        AND (s.user_id = auth.uid()::text OR s.user_id IS NULL)
-    ));
+CREATE POLICY "Users can manage own vaccination records" ON public.vaccination_records
+    FOR ALL USING (auth.uid()::text = user_id OR user_id IS NULL)
+    WITH CHECK (auth.uid()::text = user_id OR user_id IS NULL);

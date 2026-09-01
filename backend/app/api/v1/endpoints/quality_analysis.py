@@ -5,9 +5,9 @@ Aggregates Reference Nutrition, ML Inference, Visual Mould Screening, and Risk A
 import logging
 import uuid
 from datetime import datetime, timezone
-from typing import Optional
+from typing import Optional, List
 
-from fastapi import APIRouter, File, Form, UploadFile, Request, status, HTTPException
+from fastapi import APIRouter, File, Form, UploadFile, Request, status, HTTPException, Query
 
 from backend.app.schemas.quality_analysis import (
     CombinedFeedAnalysisResponse,
@@ -369,3 +369,31 @@ async def analyze_silage(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Combined silage analysis failed: {str(e)}"
         )
+
+
+@router.get(
+    "/history",
+    response_model=List[AnalysisRecord],
+    status_code=status.HTTP_200_OK,
+    summary="Retrieve persistent quality analysis history records for authenticated user"
+)
+async def get_analysis_history(
+    request: Request,
+    analysis_type: Optional[str] = Query(default=None, description="Filter by 'feed' or 'silage'"),
+    animal_id: Optional[str] = Query(default=None, description="Filter by animal Tag ID"),
+    limit: int = Query(default=50, ge=1, le=100)
+):
+    """
+    Retrieves saved feed and silage analysis history records for the authenticated user.
+    Enforces strict user data isolation via OwnershipGuard.
+    """
+    auth_ctx = ownership_guard.validate_request_ownership(
+        request=request, animal_id=animal_id, require_auth=True
+    )
+    repo = get_farm_cattle_repository()
+    return repo.get_latest_analysis(
+        user_id=auth_ctx.user_id,
+        animal_id=animal_id,
+        analysis_type=analysis_type,
+        limit=limit
+    )

@@ -4,7 +4,7 @@ Multilingual AI Chatbox Schemas
 
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 
 class ChatRequest(BaseModel):
@@ -14,7 +14,7 @@ class ChatRequest(BaseModel):
         description="The message from the farmer in any supported script or Romanized text.",
         min_length=1,
         max_length=2000,
-        examples=["En maadu 15 litre paal kudukuthu, enna feed kudukkanum?", "What should I feed my cow?"]
+        examples=["En maadu 15 litre paal kudukuthu, enna feed kudukkanum?", "Tell me about COW-1001", "What should I feed my cow?"]
     )
     language: Optional[str] = Field(
         default=None,
@@ -38,9 +38,25 @@ class ChatRequest(BaseModel):
     )
     selected_animal_id: Optional[str] = Field(
         default=None,
-        description="Optional selected animal identifier (e.g. 'COW_456'). If supplied, AI Advisory uses ONLY this authorized animal's profile.",
-        examples=["COW_456"]
+        description="Optional selected animal identifier / Tag ID (e.g. 'COW-1001').",
+        examples=["COW-1001"]
     )
+    tag_id: Optional[str] = Field(
+        default=None,
+        description="Optional alias for selected cattle Tag ID.",
+        examples=["COW-1001"]
+    )
+
+    @model_validator(mode="before")
+    @classmethod
+    def sync_tag_id_fields(cls, data: Any) -> Any:
+        if isinstance(data, dict):
+            tid = data.get("tag_id") or data.get("selected_animal_id")
+            if tid:
+                cleaned = str(tid).strip()
+                data["selected_animal_id"] = cleaned
+                data["tag_id"] = cleaned
+        return data
 
     @field_validator("message")
     @classmethod

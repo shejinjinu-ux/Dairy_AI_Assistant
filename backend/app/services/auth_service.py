@@ -58,6 +58,9 @@ class AuthService:
         user_id = f"farmer_{phone_hash}"
         session_id = f"sess_{uuid.uuid4().hex[:16]}"
 
+        from backend.app.core.ownership_guard import auth_session_store
+        auth_session_store.register_session(session_id=session_id, user_id=user_id, phone=phone)
+
         logger.info(f"Authenticated user {user_id} with verified phone {mask_phone_number(phone)}.")
 
         return VerifyOTPResponse(
