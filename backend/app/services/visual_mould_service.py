@@ -82,36 +82,44 @@ class VisualMouldScreeningService:
         min_c = np.minimum(np.minimum(r, g), b)
         sat = (max_c - min_c) / (max_c + 1e-6)
 
-        # 3. Candidate White / Grey Mycelium (high brightness, low saturation)
-        raw_white_mask = (gray > 0.82) & (sat < 0.12)
+        mean_gray = float(np.mean(gray))
 
-        # 4. Candidate Green-Grey Mould Spores
-        is_yellow_or_brown = (float(np.mean(r)) > 0.38) and (float(np.mean(r)) >= float(np.mean(g)))
-        if is_yellow_or_brown:
-            raw_green_mask = (g > r + 0.10) & (g > b + 0.08) & (gray < 0.55) & (sat > 0.18)
-        else:
-            raw_green_mask = (g > r + 0.18) & (b > 0.35) & (sat > 0.25)
+        # 3. Candidate White / Cream / Pale-Grey Mycelium (Mucor, Geotrichum, Yeasts)
+        # Fungal mycelia appear as bright pale/cream/white fuzzy patches contrasting against forage
+        raw_white_mask = (
+            ((gray > 0.68) & (sat < 0.22)) |
+            ((gray > 0.78) & (sat < 0.32)) |
+            ((gray > mean_gray + 0.22) & (sat < 0.25) & (gray > 0.58))
+        )
+
+        # 4. Candidate Blue-Green / Turquoise / Teal / Cyan / Grey-Green Mould Spores (Penicillium, Aspergillus)
+        # Distinguishes cool fungal spores (elevated blue/cyan or teal contrast) from natural warm yellowish forage chlorophyll
+        raw_green_mask = (
+            ((b > r - 0.02) & (g > r + 0.05) & (sat > 0.08) & (gray > 0.25)) |
+            ((b > r + 0.04) & (sat > 0.06) & (gray > 0.30)) |
+            ((g > r + 0.20) & (b > 0.30) & (sat > 0.20))
+        )
 
         # 5. Candidate Dark Rotten Decomposition (pitch black sludge)
-        raw_dark_rot = (gray < 0.12)
+        raw_dark_rot = (gray < 0.14)
 
         # 6. Candidate Aerobic Heating on Silage (caramelized dark dry patches)
         if is_silage:
-            raw_aerobic_heat = (gray < 0.28) & (gray >= 0.12) & (r >= g)
+            raw_aerobic_heat = (gray < 0.28) & (gray >= 0.14) & (r >= g)
         else:
             raw_aerobic_heat = np.zeros_like(gray, dtype=bool)
 
-        # 7. Spatial Morphological Neighborhood Density (11x11 window)
-        white_density = uniform_filter(raw_white_mask.astype(np.float32), size=11, mode="reflect")
-        green_density = uniform_filter(raw_green_mask.astype(np.float32), size=11, mode="reflect")
-        dark_rot_density = uniform_filter(raw_dark_rot.astype(np.float32), size=11, mode="reflect")
-        aerobic_density = uniform_filter(raw_aerobic_heat.astype(np.float32), size=11, mode="reflect") if is_silage else np.zeros_like(gray)
+        # 7. Spatial Morphological Neighborhood Density (9x9 window)
+        white_density = uniform_filter(raw_white_mask.astype(np.float32), size=9, mode="reflect")
+        green_density = uniform_filter(raw_green_mask.astype(np.float32), size=9, mode="reflect")
+        dark_rot_density = uniform_filter(raw_dark_rot.astype(np.float32), size=9, mode="reflect")
+        aerobic_density = uniform_filter(raw_aerobic_heat.astype(np.float32), size=9, mode="reflect") if is_silage else np.zeros_like(gray)
 
-        # Coherent cluster requires local neighborhood density > 0.35
-        clustered_white_mask = raw_white_mask & (white_density > 0.35)
-        clustered_green_mask = raw_green_mask & (green_density > 0.35)
-        clustered_dark_rot = raw_dark_rot & (dark_rot_density > 0.35)
-        clustered_aerobic = raw_aerobic_heat & (aerobic_density > 0.35) if is_silage else np.zeros_like(gray, dtype=bool)
+        # Coherent colony cluster requires local neighborhood density > 0.25
+        clustered_white_mask = raw_white_mask & (white_density > 0.25)
+        clustered_green_mask = raw_green_mask & (green_density > 0.25)
+        clustered_dark_rot = raw_dark_rot & (dark_rot_density > 0.25)
+        clustered_aerobic = raw_aerobic_heat & (aerobic_density > 0.25) if is_silage else np.zeros_like(gray, dtype=bool)
 
         clustered_white_pct = float(np.mean(clustered_white_mask))
         clustered_green_pct = float(np.mean(clustered_green_mask))
@@ -119,9 +127,9 @@ class VisualMouldScreeningService:
         clustered_aerobic_pct = float(np.mean(clustered_aerobic))
 
         total_clustered_anomaly = (
-            clustered_white_pct * 2.0 +
-            clustered_green_pct * 2.0 +
-            clustered_dark_rot_pct +
+            clustered_white_pct * 2.5 +
+            clustered_green_pct * 2.5 +
+            clustered_dark_rot_pct * 1.5 +
             (clustered_aerobic_pct if is_silage else 0.0)
         )
         discolouration_index = float(np.clip(total_clustered_anomaly * 4.0, 0.0, 1.0))
@@ -132,13 +140,13 @@ class VisualMouldScreeningService:
         grad_mag = np.sqrt(gx[:-1, :] ** 2 + gy[:, :-1] ** 2)
         roughness_score = float(np.clip(float(np.mean(grad_mag)) * 2.5, 0.0, 1.0))
 
-        # Multi-evidence flags requiring substantial clustered coverage
+        # Multi-evidence flags requiring clustered coverage
         has_mould_clusters = bool(
-            clustered_white_pct > 0.035 or
-            clustered_green_pct > 0.030 or
-            (clustered_white_pct + clustered_green_pct) > 0.040
+            clustered_white_pct > 0.015 or
+            clustered_green_pct > 0.015 or
+            (clustered_white_pct + clustered_green_pct) > 0.020
         )
-        has_hyphae = bool(clustered_white_pct > 0.025 or clustered_green_pct > 0.025)
+        has_hyphae = bool(clustered_white_pct > 0.010 or clustered_green_pct > 0.010)
 
         indicators = VisualIndicators(
             surface_discolouration_index=round(discolouration_index, 3),
@@ -203,24 +211,24 @@ class VisualMouldScreeningService:
         c_dark = metrics["clustered_dark_rot_pct"]
 
         has_severe_spoilage = bool(
-            c_dark > 0.30 or
-            (c_dark > 0.15 and (c_white + c_green) > 0.04)
+            c_dark > 0.20 or
+            (c_dark > 0.10 and (c_white + c_green) > 0.02)
         )
         has_mould_clusters = indicators.dark_or_mould_cluster_spots
 
         # Multi-evidence decision logits
         if has_severe_spoilage:
-            logit_good = -1.5
+            logit_good = -2.0
             logit_mould = 0.5
-            logit_spoiled = 3.5
+            logit_spoiled = 4.0
         elif has_mould_clusters:
-            logit_good = -1.0
-            logit_mould = 3.5
+            logit_good = -1.5
+            logit_mould = 4.0
             logit_spoiled = -0.5
         else:
-            logit_good = 3.0 - 2.5 * discolouration
-            logit_mould = -1.5 + 4.0 * (c_white + c_green)
-            logit_spoiled = -2.5 + 3.0 * c_dark
+            logit_good = 3.0 - 4.0 * discolouration
+            logit_mould = -2.0 + 6.0 * (c_white + c_green)
+            logit_spoiled = -2.5 + 4.0 * c_dark
 
         logits = np.array([logit_good, logit_mould, logit_spoiled], dtype=np.float32)
         exp_logits = np.exp(logits - np.max(logits))
@@ -334,24 +342,24 @@ class VisualMouldScreeningService:
         c_aerobic = metrics["clustered_aerobic_pct"]
 
         has_severe_spoilage = bool(
-            c_dark > 0.30 or
-            (c_dark > 0.15 and (c_white + c_green) > 0.04)
+            c_dark > 0.20 or
+            (c_dark > 0.10 and (c_white + c_green) > 0.02)
         )
         has_mould_clusters = indicators.dark_or_mould_cluster_spots
-        has_aerobic_spoilage = bool(c_aerobic > 0.25)
+        has_aerobic_spoilage = bool(c_aerobic > 0.20)
 
         # Silage multi-class logits: GOOD, MOULD_RISK, SPOILED, POOR_FERMENTATION
         if has_severe_spoilage:
-            logit_good, logit_mould, logit_spoiled, logit_poor = -1.5, 0.0, 3.5, 0.0
+            logit_good, logit_mould, logit_spoiled, logit_poor = -2.0, 0.5, 4.0, 0.0
         elif has_mould_clusters:
-            logit_good, logit_mould, logit_spoiled, logit_poor = -1.0, 3.5, -0.5, 0.0
+            logit_good, logit_mould, logit_spoiled, logit_poor = -1.5, 4.0, -0.5, 0.0
         elif has_aerobic_spoilage:
-            logit_good, logit_mould, logit_spoiled, logit_poor = -0.5, 0.0, -0.5, 3.0
+            logit_good, logit_mould, logit_spoiled, logit_poor = -0.5, 0.0, -0.5, 3.5
         else:
-            logit_good = 3.0 - 2.5 * discolouration
-            logit_mould = -1.5 + 4.0 * (c_white + c_green)
-            logit_spoiled = -2.5 + 3.0 * c_dark
-            logit_poor = -1.5 + 3.0 * c_aerobic
+            logit_good = 3.0 - 4.0 * discolouration
+            logit_mould = -2.0 + 6.0 * (c_white + c_green)
+            logit_spoiled = -2.5 + 4.0 * c_dark
+            logit_poor = -1.5 + 4.0 * c_aerobic
 
         logits = np.array([logit_good, logit_mould, logit_spoiled, logit_poor], dtype=np.float32)
         exp_logits = np.exp(logits - np.max(logits))

@@ -31,8 +31,7 @@ HUMAN_PERSON_KEYWORDS = [
     "person", "human", "man", "woman", "boy", "girl", "face",
     "wig", "jersey", "trench coat", "suit", "cloak", "gown", "kimono",
     "brassiere", "bikini", "pajama", "sombrero", "cowboy hat", "bonnet",
-    "sweatshirt", "cardigan", "jean", "sock", "shoe", "sandal", "sunglass",
-    "face powder", "lipstick", "lotion", "perfume", "diaper", "bib"
+    "sweatshirt", "cardigan", "jean", "sock", "shoe", "sandal", "sunglass"
 ]
 
 ANIMAL_KEYWORDS = [

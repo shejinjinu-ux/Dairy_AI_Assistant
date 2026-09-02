@@ -927,3 +927,117 @@ def test_25_authenticated_feed_and_silage_history_persistence():
     record_ids_b = [r["record_id"] for r in hist_b]
     assert feed_data["record_id"] not in record_ids_b
     assert silage_data["record_id"] not in record_ids_b
+
+
+# ==============================================================================
+# 26. Regression Tests: Moldy / Spoiled Silage MUST NOT Classify as GOOD
+# ==============================================================================
+
+def test_26_silage_visual_mold_growth_regression():
+    """
+    CRITICAL REGRESSION TEST:
+    Samples with visible blue/green/white mould or dark rot MUST NOT be classified as GOOD.
+    """
+    import numpy as np
+    # 1. Base clean silage
+    arr_clean = np.zeros((224, 224, 3), dtype=np.uint8)
+    np.random.seed(42)
+    arr_clean[:, :, 0] = np.random.randint(120, 160, (224, 224))
+    arr_clean[:, :, 1] = np.random.randint(130, 170, (224, 224))
+    arr_clean[:, :, 2] = np.random.randint(50, 85, (224, 224))
+
+    # A: White/Grey fungal mycelium
+    img_white_mold = Image.fromarray(np.copy(arr_clean))
+    d_w = ImageDraw.Draw(img_white_mold)
+    for _ in range(12):
+        x, y = np.random.randint(20, 180, 2)
+        r = np.random.randint(15, 30)
+        d_w.ellipse([x, y, x + r, y + r], fill=(185, 195, 185))
+    buf_w = io.BytesIO()
+    img_white_mold.save(buf_w, format="JPEG")
+
+    res_w = client.post(
+        "/api/v1/predict/silage-visual",
+        files={"file": ("silage_white_mold.jpg", buf_w.getvalue(), "image/jpeg")}
+    )
+    assert res_w.status_code == 200
+    data_w = res_w.json()
+    assert data_w["success"] is True
+    assert data_w["predicted_class"] != "GOOD", f"White mold must NOT be classified as GOOD: {data_w}"
+    assert data_w["predicted_class"] in ["MOULD_RISK", "SPOILED"]
+    assert data_w["risk_level"] in ["HIGH", "CRITICAL"]
+
+    # B: Blue-Green / Turquoise Mold (Penicillium)
+    img_bg_mold = Image.fromarray(np.copy(arr_clean))
+    d_bg = ImageDraw.Draw(img_bg_mold)
+    for _ in range(12):
+        x, y = np.random.randint(20, 180, 2)
+        r = np.random.randint(15, 30)
+        d_bg.ellipse([x, y, x + r, y + r], fill=(75, 140, 130))
+    buf_bg = io.BytesIO()
+    img_bg_mold.save(buf_bg, format="JPEG")
+
+    res_bg = client.post(
+        "/api/v1/predict/silage-visual",
+        files={"file": ("silage_bluegreen_mold.jpg", buf_bg.getvalue(), "image/jpeg")}
+    )
+    assert res_bg.status_code == 200
+    data_bg = res_bg.json()
+    assert data_bg["success"] is True
+    assert data_bg["predicted_class"] != "GOOD", f"Blue-green mold must NOT be classified as GOOD: {data_bg}"
+    assert data_bg["predicted_class"] in ["MOULD_RISK", "SPOILED"]
+
+    # C: Powdery Blue-Grey Mold
+    img_pbg_mold = Image.fromarray(np.copy(arr_clean))
+    d_pbg = ImageDraw.Draw(img_pbg_mold)
+    for _ in range(12):
+        x, y = np.random.randint(20, 180, 2)
+        r = np.random.randint(15, 30)
+        d_pbg.ellipse([x, y, x + r, y + r], fill=(150, 175, 185))
+    buf_pbg = io.BytesIO()
+    img_pbg_mold.save(buf_pbg, format="JPEG")
+
+    res_pbg = client.post(
+        "/api/v1/predict/silage-visual",
+        files={"file": ("silage_powdery_mold.jpg", buf_pbg.getvalue(), "image/jpeg")}
+    )
+    assert res_pbg.status_code == 200
+    data_pbg = res_pbg.json()
+    assert data_pbg["success"] is True
+    assert data_pbg["predicted_class"] != "GOOD", f"Powdery mold must NOT be classified as GOOD: {data_pbg}"
+    assert data_pbg["predicted_class"] in ["MOULD_RISK", "SPOILED"]
+
+    # D: Dark Rotten Clostridial Spoilage
+    img_dark_rot = Image.fromarray(np.copy(arr_clean))
+    d_dr = ImageDraw.Draw(img_dark_rot)
+    for _ in range(20):
+        x, y = np.random.randint(10, 180, 2)
+        r = np.random.randint(25, 50)
+        d_dr.ellipse([x, y, x + r, y + r], fill=(25, 20, 15))
+    buf_dr = io.BytesIO()
+    img_dark_rot.save(buf_dr, format="JPEG")
+
+    res_dr = client.post(
+        "/api/v1/predict/silage-visual",
+        files={"file": ("silage_dark_rot.jpg", buf_dr.getvalue(), "image/jpeg")}
+    )
+    assert res_dr.status_code == 200
+    data_dr = res_dr.json()
+    assert data_dr["success"] is True
+    assert data_dr["predicted_class"] == "SPOILED"
+    assert data_dr["risk_level"] == "CRITICAL"
+
+    # E: Clean Silage Sample
+    img_clean_sample = Image.fromarray(arr_clean)
+    buf_c = io.BytesIO()
+    img_clean_sample.save(buf_c, format="JPEG")
+
+    res_c = client.post(
+        "/api/v1/predict/silage-visual",
+        files={"file": ("silage_clean.jpg", buf_c.getvalue(), "image/jpeg")}
+    )
+    assert res_c.status_code == 200
+    data_c = res_c.json()
+    assert data_c["success"] is True
+    assert data_c["predicted_class"] == "GOOD"
+    assert data_c["risk_level"] == "LOW"
