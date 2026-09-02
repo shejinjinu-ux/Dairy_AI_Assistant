@@ -293,14 +293,14 @@ class AIService:
 
         # Build ordered candidate models list
         candidate_models = [self.model_name]
-        for fallback_model in ["gemini-3.5-flash", "gemini-3.5-flash-lite", "gemini-3-flash-preview"]:
+        for fallback_model in ["gemini-3.5-flash", "gemini-3.6-flash"]:
             if fallback_model not in candidate_models:
                 candidate_models.append(fallback_model)
 
         for model_to_try in candidate_models:
             url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_to_try}:generateContent?key={api_key}"
             try:
-                res = self._send_gemini_request(url, headers, payload, timeout=15.0)
+                res = self._send_gemini_request(url, headers, payload, timeout=6.0)
 
                 if res.status_code == 200:
                     data = res.json()
@@ -318,7 +318,7 @@ class AIService:
                     logger.warning(f"Gemini API returned status code {res.status_code} for model '{model_to_try}'.")
                     continue
             except httpx.TimeoutException:
-                logger.warning(f"Gemini API request timed out after 15.0s for model '{model_to_try}'.")
+                logger.warning(f"Gemini API request timed out for model '{model_to_try}'.")
                 continue
             except httpx.RequestError as exc:
                 logger.warning(f"Network error connecting to Gemini API with model '{model_to_try}': {type(exc).__name__}")
@@ -329,12 +329,17 @@ class AIService:
 
         return None
 
-    def _send_gemini_request(self, url: str, headers: dict, payload: dict, timeout: float = 15.0) -> httpx.Response:
-        """Isolated HTTP request execution for Google Gemini REST endpoint."""
+    def _send_gemini_request(self, url: str, headers: dict, payload: dict, timeout: float = 8.0) -> httpx.Response:
+        """Isolated HTTP request execution for Google Gemini REST endpoint with fast IPv4 connect timeout."""
         if self._http_client:
-            return self._http_client.post(url, headers=headers, json=payload, timeout=timeout)
-        with httpx.Client(timeout=timeout) as client:
-            return client.post(url, headers=headers, json=payload)
+            return self._http_client.post(url, headers=headers, json=payload, timeout=httpx.Timeout(timeout, connect=3.5))
+        try:
+            transport = httpx.HTTPTransport(local_address="0.0.0.0")
+            with httpx.Client(transport=transport, timeout=httpx.Timeout(timeout, connect=3.5)) as client:
+                return client.post(url, headers=headers, json=payload)
+        except Exception:
+            with httpx.Client(timeout=httpx.Timeout(timeout, connect=3.5)) as client:
+                return client.post(url, headers=headers, json=payload)
 
     def _format_nutrition_table(self, nutrition_data: RationRecommendationResult, target_language: str) -> str:
         """Formats optimized ICAR nutrition recommendation into multilingual response."""
