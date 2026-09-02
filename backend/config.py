@@ -107,12 +107,33 @@ class Settings(BaseSettings):
     SUPABASE_PUBLISHABLE_KEY: str | None = None
     SUPABASE_PUBLIC_KEY: str | None = None
 
+    # Environment & Demo OTP Configuration
+    ENVIRONMENT: str = "development"  # "development", "staging", "production", "demo", "test"
+    ENABLE_DEMO_OTP: bool = False
+    DEMO_OTP_CODE: str = "123456"
+
     # Fast2SMS OTP Authentication Configuration
     FAST2SMS_API_KEY: str | None = None
     OTP_EXPIRY_SECONDS: int = 300  # 5 minutes validity
     OTP_COOLDOWN_SECONDS: int = 60  # 60 seconds resend cooldown
     OTP_MAX_SENDS_PER_WINDOW: int = 5  # Max 5 sends per 15 minutes
     OTP_WINDOW_SECONDS: int = 900  # 15 minutes window
+
+    @property
+    def is_production(self) -> bool:
+        """Returns True if the application environment is set to production."""
+        env = (self.ENVIRONMENT or "").strip().lower()
+        return env in ["production", "prod"]
+
+    @property
+    def is_demo_otp_active(self) -> bool:
+        """
+        Returns True if Demo OTP is active.
+        Strictly disabled in production regardless of ENABLE_DEMO_OTP setting.
+        """
+        if self.is_production:
+            return False
+        return bool(self.ENABLE_DEMO_OTP)
 
     @property
     def effective_ai_api_key(self) -> str | None:

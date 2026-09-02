@@ -341,6 +341,23 @@ class Fast2SMSService:
         )
 
         if not settings.is_fast2sms_configured:
+            if settings.is_demo_otp_active:
+                # In development/demo mode without Fast2SMS configured, record active OTP and allow seamless demo login
+                secure_otp_store.generate_and_store_otp(
+                    phone=canonical_phone,
+                    expiry_seconds=settings.OTP_EXPIRY_SECONDS
+                )
+                logger.info(
+                    f"Demo Mode: FAST2SMS_API_KEY unconfigured. Recorded demo OTP request for {mask_phone_number(canonical_phone)}. "
+                    f"Demo OTP code: {settings.DEMO_OTP_CODE}"
+                )
+                return {
+                    "success": True,
+                    "phone": canonical_phone,
+                    "status": "pending",
+                    "request_id": f"demo_req_{secrets.token_hex(8)}"
+                }
+
             logger.error("FAST2SMS_API_KEY is not configured on the backend server.")
             raise OTPProviderError(
                 "SMS OTP service is currently unconfigured. Please configure FAST2SMS_API_KEY "
@@ -383,9 +400,29 @@ class Fast2SMSService:
                     # Fast2SMS returned error message list
                     error_msg = _extract_safe_provider_error(response, otp_code)
                     logger.error(f"Fast2SMS API rejected request for {mask_phone_number(canonical_phone)}: {error_msg}")
+                    if settings.is_demo_otp_active:
+                        logger.warning(f"Demo Mode: Provider rejected request ({error_msg}). Continuing with demo OTP.")
+                        return {
+                            "success": True,
+                            "phone": canonical_phone,
+                            "status": "pending",
+                            "request_id": f"demo_fallback_{secrets.token_hex(8)}"
+                        }
                     raise OTPProviderError(f"Fast2SMS delivery error: {error_msg}", provider="fast2sms")
 
             error_details = _extract_safe_provider_error(response, otp_code)
+
+            if settings.is_demo_otp_active:
+                logger.warning(
+                    f"Demo Mode: HTTP {response.status_code} from Fast2SMS ({error_details}). "
+                    f"Continuing with demo OTP code {settings.DEMO_OTP_CODE}."
+                )
+                return {
+                    "success": True,
+                    "phone": canonical_phone,
+                    "status": "pending",
+                    "request_id": f"demo_fallback_{secrets.token_hex(8)}"
+                }
 
             if response.status_code in [401, 403]:
                 logger.error(f"Fast2SMS authentication failure (HTTP {response.status_code}): {error_details}")
@@ -405,15 +442,32 @@ class Fast2SMSService:
         except (InvalidPhoneNumberError, OTPRateLimitError, OTPProviderError):
             raise
         except httpx.RequestError as exc:
+            if settings.is_demo_otp_active:
+                logger.warning(f"Demo Mode: Network error connecting to Fast2SMS ({exc}). Continuing with demo OTP.")
+                return {
+                    "success": True,
+                    "phone": canonical_phone,
+                    "status": "pending",
+                    "request_id": f"demo_fallback_{secrets.token_hex(8)}"
+                }
             logger.error(f"Network timeout/error connecting to Fast2SMS: {exc}")
             raise OTPProviderError("Network connection to SMS provider gateway failed or timed out.", provider="fast2sms")
         except Exception as exc:
+            if settings.is_demo_otp_active:
+                logger.warning(f"Demo Mode: Unexpected error in send_otp ({exc}). Continuing with demo OTP.")
+                return {
+                    "success": True,
+                    "phone": canonical_phone,
+                    "status": "pending",
+                    "request_id": f"demo_fallback_{secrets.token_hex(8)}"
+                }
             logger.error(f"Unexpected error in Fast2SMS send_otp: {exc}")
             raise OTPProviderError(f"SMS service error: {str(exc)}", provider="fast2sms")
 
     async def verify_otp(self, raw_phone: str, user_otp: str) -> dict:
         """
         Verify the user-provided OTP code against the secure salted hash store.
+        In development/demo mode, accepts fixed demo OTP (123456).
         """
         canonical_phone, _ = normalize_phone_number(raw_phone)
 
@@ -425,6 +479,22 @@ class Fast2SMSService:
             raise OTPVerificationError("OTP code must be 4 to 8 numeric digits.", phone=canonical_phone)
 
         logger.info(f"Verifying OTP code for {mask_phone_number(canonical_phone)}...")
+
+        # In development/demo mode, accept the fixed DEMO OTP code (123456)
+        if settings.is_demo_otp_active and cleaned_otp == settings.DEMO_OTP_CODE:
+            # Clean up any active temporary OTP records for this phone
+            secure_otp_store.reset(phone=canonical_phone)
+            logger.info(
+                f"Demo OTP code ({settings.DEMO_OTP_CODE}) successfully verified for {mask_phone_number(canonical_phone)}."
+            )
+            return {
+                "success": True,
+                "verified": True,
+                "phone": canonical_phone,
+                "status": "approved"
+            }
+
+        # Validate against cryptographic salted hash store (for real SMS OTP or wrong codes)
         secure_otp_store.verify_and_consume_otp(phone=canonical_phone, user_otp=cleaned_otp)
 
         logger.info(f"OTP successfully verified and consumed for {mask_phone_number(canonical_phone)}.")
